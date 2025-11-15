@@ -78,6 +78,7 @@ interface CheckoutFormState {
 
 const SERVICE_FEE_RATE = 0.1;
 const TAX_RATE = 0.12;
+const DEFAULT_ITEM_WEIGHT = 0.5;
 const stepOrder: CheckoutStep[] = [
     'order-summary',
     'customer-info',
@@ -134,7 +135,7 @@ export default function MarketplaceCheckout({
 }: MarketplaceCheckoutProps) {
     const ownerIdentifier =
         community.slug ?? community.identifier ?? community.id;
-
+    const communityName = community.name;
     const user = auth.user;
     const currencyMeta = useMemo(() => {
         const fallback: CommunityCurrency = {
@@ -453,37 +454,17 @@ export default function MarketplaceCheckout({
         item: MarketplaceCartItem,
         product: MarketplaceProduct | undefined,
     ): number => {
-        const variantWeight = item.variant
-            ? parseNumeric(item.variant.weight)
-            : 0;
+        const variantWeight = parseNumeric(item.variant?.weight);
         const productWeight = parseNumeric(product?.weight);
-        const weight = variantWeight || productWeight;
-        return weight * item.quantity;
+        const resolvedUnitWeight =
+            variantWeight > 0
+                ? variantWeight
+                : productWeight > 0
+                  ? productWeight
+                  : DEFAULT_ITEM_WEIGHT;
+        const quantity = item.quantity > 0 ? item.quantity : 1;
+        return resolvedUnitWeight * quantity;
     };
-
-    const getItemShippingFee = useCallback(
-        (item: MarketplaceCartItem): number => {
-            const product = getProductById(item.id);
-            const itemWeight = getItemWeight(item, product);
-            if (itemWeight <= 0) {
-                return 0;
-            }
-            return calculateShippingFee(
-                formData.country,
-                formData.state,
-                formData.city,
-                formData.shippingMethod,
-                itemWeight,
-            );
-        },
-        [
-            formData.country,
-            formData.state,
-            formData.city,
-            formData.shippingMethod,
-            getProductById,
-        ],
-    );
 
     const cartSubtotal = useMemo(() => {
         return cartItems.reduce((total, item) => {
@@ -503,11 +484,45 @@ export default function MarketplaceCheckout({
         }, 0);
     }, [cartItems, getProductById]);
 
+    const totalItemCount = useMemo(() => {
+        return cartItems.reduce((count, item) => count + item.quantity, 0);
+    }, [cartItems]);
+
+    const effectiveCartWeight = useMemo(() => {
+        if (cartTotalWeight > 0) {
+            return cartTotalWeight;
+        }
+        if (totalItemCount > 0) {
+            return totalItemCount * DEFAULT_ITEM_WEIGHT;
+        }
+        return 0;
+    }, [cartTotalWeight, totalItemCount]);
+
     const shippingFee = useMemo(() => {
-        return cartItems.reduce((total, item) => {
-            return total + getItemShippingFee(item);
-        }, 0);
-    }, [cartItems, getItemShippingFee]);
+        if (cartItems.length === 0) {
+            return 0;
+        }
+
+        const weightForCalculation =
+            effectiveCartWeight > 0
+                ? effectiveCartWeight
+                : DEFAULT_ITEM_WEIGHT;
+
+        return calculateShippingFee(
+            formData.country,
+            formData.state,
+            formData.city,
+            formData.shippingMethod,
+            weightForCalculation,
+        );
+    }, [
+        cartItems.length,
+        effectiveCartWeight,
+        formData.country,
+        formData.state,
+        formData.city,
+        formData.shippingMethod,
+    ]);
 
     const serviceFee = useMemo(
         () => cartSubtotal * SERVICE_FEE_RATE,
@@ -523,6 +538,9 @@ export default function MarketplaceCheckout({
             formData.city,
         );
 
+        const weightForQuotes =
+            effectiveCartWeight > 0 ? effectiveCartWeight : DEFAULT_ITEM_WEIGHT;
+
         return baseMethods.map((method) => ({
             ...method,
             price: calculateShippingFee(
@@ -530,10 +548,15 @@ export default function MarketplaceCheckout({
                 formData.state,
                 formData.city,
                 method.id,
-                cartTotalWeight,
+                weightForQuotes,
             ),
         }));
-    }, [formData.country, formData.state, formData.city, cartTotalWeight]);
+    }, [
+        effectiveCartWeight,
+        formData.country,
+        formData.state,
+        formData.city,
+    ]);
 
     useEffect(() => {
         if (
@@ -769,6 +792,11 @@ export default function MarketplaceCheckout({
             return;
         }
 
+        const weightForAllocation =
+            effectiveCartWeight > 0
+                ? effectiveCartWeight
+                : cartItems.length * DEFAULT_ITEM_WEIGHT || DEFAULT_ITEM_WEIGHT;
+
         const orderItems = cartItems.reduce<
             Array<{
                 product_id: number;
@@ -785,7 +813,16 @@ export default function MarketplaceCheckout({
                 return items;
             }
             const price = getEffectivePrice(product, cartItem.variant);
-            const shipping = getItemShippingFee(cartItem);
+            const itemWeight = getItemWeight(cartItem, product);
+            const allocationBase =
+                itemWeight > 0
+                    ? itemWeight
+                    : DEFAULT_ITEM_WEIGHT * Math.max(cartItem.quantity, 1);
+            const weightShare =
+                weightForAllocation > 0
+                    ? allocationBase / weightForAllocation
+                    : 1 / cartItems.length;
+            const shipping = roundCurrency(shippingFee * weightShare);
 
             items.push({
                 product_id: Number.parseInt(String(product.id), 10),
@@ -814,6 +851,13 @@ export default function MarketplaceCheckout({
                   .querySelector('meta[name="csrf-token"]')
                   ?.getAttribute('content') ?? '')
             : '';
+
+        if (!csrfToken) {
+            toast.error(
+                'Unable to verify your session. Please refresh the page and try again.',
+            );
+            return;
+        }
 
         const orderPayload = {
             customer_name: `${formData.firstName} ${formData.lastName}`.trim(),
@@ -847,6 +891,11 @@ export default function MarketplaceCheckout({
             zip_code: formData.zipCode,
         };
 
+        const payloadWithToken = {
+            ...orderPayload,
+            _token: csrfToken,
+        };
+
         setIsProcessing(true);
 
         try {
@@ -861,8 +910,10 @@ export default function MarketplaceCheckout({
                         'Content-Type': 'application/json',
                         Accept: 'application/json',
                         'X-CSRF-TOKEN': csrfToken,
+                        'X-Requested-With': 'XMLHttpRequest',
                     },
-                    body: JSON.stringify(orderPayload),
+                    credentials: 'same-origin',
+                    body: JSON.stringify(payloadWithToken),
                 },
             );
 
@@ -1611,8 +1662,8 @@ export default function MarketplaceCheckout({
                                 </div>
                                 <p className="text-xs text-gray-500 dark:text-gray-400">
                                     By placing your order, you agree to the
-                                    marketplace terms and understand that your
-                                    selected community partner will fulfill and
+                                    marketplace terms and understand that
+                                    {'' + communityName} will fulfill and
                                     manage the order.
                                 </p>
                             </CardContent>

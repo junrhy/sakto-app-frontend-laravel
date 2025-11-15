@@ -108,6 +108,7 @@ Route::middleware(['auth', 'customer', 'verified', 'ensure_user_type:customer'])
             Route::delete('/products/{product}/images/{image}', [App\Http\Controllers\Customer\MarketplaceController::class, 'deleteProductImage'])->name('products.images.destroy');
             Route::get('/products/{product}/orders', [App\Http\Controllers\Customer\MarketplaceController::class, 'productOrders'])->name('products.orders');
             Route::post('/orders/{order}/cancel', [App\Http\Controllers\Customer\MarketplaceController::class, 'cancelOrder'])->name('orders.cancel');
+            Route::put('/orders/{order}', [App\Http\Controllers\Customer\MarketplaceController::class, 'updateOrder'])->name('orders.update');
             Route::post('/orders', [App\Http\Controllers\Customer\MarketplaceController::class, 'placeOrder'])->name('orders.store');
         });
 

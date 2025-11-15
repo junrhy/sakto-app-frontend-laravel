@@ -1,9 +1,17 @@
+import { Button } from '@/Components/ui/button';
 import {
     Dialog,
     DialogContent,
     DialogHeader,
     DialogTitle,
 } from '@/Components/ui/dialog';
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from '@/Components/ui/select';
 import {
     Table,
     TableBody,
@@ -13,6 +21,7 @@ import {
     TableRow,
 } from '@/Components/ui/table';
 import { formatDateTimeForDisplay } from '@/Pages/Public/Community/utils/dateUtils';
+import { Fragment, useEffect, useState } from 'react';
 import { ProductOrderItem } from './ProductOrderHistory';
 
 interface ProductOrdersTableProps {
@@ -20,14 +29,51 @@ interface ProductOrdersTableProps {
     onOpenChange: (value: boolean) => void;
     productName: string;
     orders: ProductOrderItem[];
+    isLoading?: boolean;
+    onUpdateOrderStatus: (
+        orderId: number | string,
+        payload: { order_status?: string; payment_status?: string },
+    ) => void | Promise<void>;
+    updatingOrderId: number | string | null;
 }
+
+const ORDER_STATUS_OPTIONS = [
+    { value: 'pending', label: 'Pending' },
+    { value: 'confirmed', label: 'Confirmed' },
+    { value: 'processing', label: 'Processing' },
+    { value: 'shipped', label: 'Shipped' },
+    { value: 'delivered', label: 'Delivered' },
+    { value: 'cancelled', label: 'Cancelled' },
+    { value: 'refunded', label: 'Refunded' },
+] as const;
+
+const PAYMENT_STATUS_OPTIONS = [
+    { value: 'pending', label: 'Pending' },
+    { value: 'paid', label: 'Paid' },
+    { value: 'failed', label: 'Failed' },
+    { value: 'refunded', label: 'Refunded' },
+    { value: 'partially_refunded', label: 'Partially Refunded' },
+] as const;
 
 export function ProductOrdersTable({
     open,
     onOpenChange,
     productName,
     orders,
+    isLoading = false,
+    onUpdateOrderStatus,
+    updatingOrderId,
 }: ProductOrdersTableProps) {
+    const [draftStatuses, setDraftStatuses] = useState<
+        Record<
+            string,
+            {
+                order_status: string;
+                payment_status: string;
+            }
+        >
+    >({});
+
     const normalizeItems = (order: ProductOrderItem) => {
         let rawItems = order.items ?? order.order_items ?? [];
 
@@ -53,6 +99,31 @@ export function ProductOrdersTable({
 
         return rawItems;
     };
+
+    const formatStatusLabel = (status: string): string =>
+        status
+            ? status
+                  .replace(/_/g, ' ')
+                  .replace(/\b\w/g, (char) => char.toUpperCase())
+            : '';
+
+    const normalizeOrderStatus = (order: ProductOrderItem): string => {
+        const value =
+            (order.order_status ?? order.status ?? 'pending')
+                ?.toString()
+                .toLowerCase() ?? 'pending';
+        return value || 'pending';
+    };
+
+    const normalizePaymentStatus = (order: ProductOrderItem): string => {
+        const value = order.payment_status
+            ? order.payment_status.toString().toLowerCase()
+            : 'pending';
+        return value || 'pending';
+    };
+
+    const getOrderKey = (order: ProductOrderItem, fallback: number | string) =>
+        String(order.id ?? order.order_number ?? order.reference ?? fallback);
 
     const getOrderItems = (order: ProductOrderItem) => {
         const rawItems = normalizeItems(order);
@@ -109,6 +180,23 @@ export function ProductOrdersTable({
         return `${price}`;
     };
 
+    useEffect(() => {
+        const initialDraft: Record<
+            string,
+            { order_status: string; payment_status: string }
+        > = {};
+
+        orders.forEach((order, index) => {
+            const orderKey = getOrderKey(order, index);
+            initialDraft[orderKey] = {
+                order_status: normalizeOrderStatus(order),
+                payment_status: normalizePaymentStatus(order),
+            };
+        });
+
+        setDraftStatuses(initialDraft);
+    }, [orders]);
+
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
             <DialogContent className="max-w-4xl">
@@ -118,7 +206,11 @@ export function ProductOrdersTable({
                     </DialogTitle>
                 </DialogHeader>
 
-                {orders.length === 0 ? (
+                {isLoading ? (
+                    <div className="py-6 text-sm text-gray-500 dark:text-gray-400">
+                        Loading orders...
+                    </div>
+                ) : orders.length === 0 ? (
                     <div className="py-6 text-sm text-gray-500 dark:text-gray-400">
                         No orders found for this product yet.
                     </div>
@@ -131,7 +223,10 @@ export function ProductOrdersTable({
                                         Order #
                                     </TableHead>
                                     <TableHead className="text-gray-900 dark:text-white">
-                                        Status
+                                        Order Status
+                                    </TableHead>
+                                    <TableHead className="text-gray-900 dark:text-white">
+                                        Payment Status
                                     </TableHead>
                                     <TableHead className="text-gray-900 dark:text-white">
                                         Total
@@ -139,96 +234,271 @@ export function ProductOrdersTable({
                                     <TableHead className="text-right text-gray-900 dark:text-white">
                                         Date
                                     </TableHead>
+                                    <TableHead className="text-right text-gray-900 dark:text-white">
+                                        Actions
+                                    </TableHead>
                                 </TableRow>
                             </TableHeader>
                             <TableBody>
-                                {orders.map((order, index) => (
-                                    <>
-                                        <TableRow
-                                            key={`product-order-${order.id ?? index}`}
+                                {orders.map((order, index) => {
+                                    const orderKey = getOrderKey(order, index);
+                                    const currentDraft = draftStatuses[orderKey];
+                                    const normalizedOrderStatus =
+                                        normalizeOrderStatus(order);
+                                    const normalizedPaymentStatus =
+                                        normalizePaymentStatus(order);
+                                    const currentOrderStatus =
+                                        currentDraft?.order_status ??
+                                        normalizedOrderStatus;
+                                    const currentPaymentStatus =
+                                        currentDraft?.payment_status ??
+                                        normalizedPaymentStatus;
+                                    const hasChanges =
+                                        currentOrderStatus !==
+                                            normalizedOrderStatus ||
+                                        currentPaymentStatus !==
+                                            normalizedPaymentStatus;
+                                    const targetOrderId =
+                                        order.id ?? orderKey;
+                                    const canUpdateOrder =
+                                        order.id !== undefined &&
+                                        order.id !== null;
+                                    const isUpdating =
+                                        updatingOrderId !== null &&
+                                        String(updatingOrderId) ===
+                                            String(targetOrderId);
+
+                                    return (
+                                        <Fragment
+                                            key={`product-order-fragment-${order.id ?? orderKey}`}
                                         >
-                                            <TableCell className="text-sm text-gray-900 dark:text-gray-100">
-                                                {order.order_number ??
-                                                    order.reference ??
-                                                    `Order-${index + 1}`}
-                                            </TableCell>
-                                            <TableCell className="text-sm text-gray-900 dark:text-gray-100">
-                                                {order.order_status ??
-                                                    order.status ??
-                                                    'unknown'}
-                                            </TableCell>
-                                            <TableCell className="text-sm text-gray-900 dark:text-gray-100">
-                                                {order.total_formatted ??
-                                                    order.amount_formatted ??
-                                                    order.total_amount ??
-                                                    order.amount ??
-                                                    '—'}
-                                            </TableCell>
-                                            <TableCell className="text-right text-sm text-gray-900 dark:text-gray-100">
-                                                {order.created_at ||
-                                                order.ordered_at
-                                                    ? formatDateTimeForDisplay(
-                                                          order.created_at ??
-                                                              order.ordered_at ??
-                                                              '',
-                                                          {
-                                                              month: 'short',
-                                                              day: 'numeric',
-                                                              year: 'numeric',
-                                                          },
-                                                      )
-                                                    : '—'}
-                                            </TableCell>
-                                        </TableRow>
-                                        {getOrderItems(order).length > 0 && (
-                                            <TableRow className="bg-gray-50/60 dark:bg-gray-800/60">
-                                                <TableCell
-                                                    colSpan={4}
-                                                    className="p-4"
-                                                >
-                                                    <div className="space-y-3">
-                                                        {getOrderItems(
-                                                            order,
-                                                        ).map((item) => (
-                                                            <div
-                                                                key={`${order.id}-item-${item.id}`}
-                                                                className="flex flex-col gap-2 border-b border-dashed border-gray-200 pb-3 last:border-b-0 last:pb-0 dark:border-gray-700"
-                                                            >
-                                                                <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
-                                                                    <div>
-                                                                        <p className="text-sm font-medium text-gray-900 dark:text-gray-100">
-                                                                            {
-                                                                                item.name
-                                                                            }
-                                                                        </p>
-                                                                        {item.attributes && (
-                                                                            <p className="text-xs text-gray-500 dark:text-gray-400">
-                                                                                {
-                                                                                    item.attributes
-                                                                                }
-                                                                            </p>
-                                                                        )}
-                                                                    </div>
-                                                                    <div className="text-sm text-gray-700 dark:text-gray-200">
-                                                                        Qty:{' '}
+                                            <TableRow
+                                                key={`product-order-${order.id ?? orderKey}`}
+                                            >
+                                                <TableCell className="text-sm text-gray-900 dark:text-gray-100">
+                                                    {order.order_number ??
+                                                        order.reference ??
+                                                        `Order-${index + 1}`}
+                                                </TableCell>
+                                                <TableCell className="text-sm text-gray-900 dark:text-gray-100">
+                                                    <Select
+                                                        value={
+                                                            currentOrderStatus
+                                                        }
+                                                        onValueChange={(value) =>
+                                                            setDraftStatuses(
+                                                                (previous) => ({
+                                                                    ...previous,
+                                                                    [orderKey]:
                                                                         {
-                                                                            item.quantity
+                                                                            order_status:
+                                                                                value,
+                                                                            payment_status:
+                                                                                currentPaymentStatus,
+                                                                        },
+                                                                }),
+                                                            )
+                                                        }
+                                                    >
+                                                        <SelectTrigger className="h-9 w-full rounded-md border border-gray-200 bg-white text-left text-sm text-gray-900 focus-visible:ring-indigo-500 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-100">
+                                                            <SelectValue
+                                                                placeholder="Select status"
+                                                                aria-label={`Order status ${formatStatusLabel(
+                                                                    currentOrderStatus,
+                                                                )}`}
+                                                            />
+                                                        </SelectTrigger>
+                                                        <SelectContent>
+                                                            {ORDER_STATUS_OPTIONS.map(
+                                                                (option) => (
+                                                                    <SelectItem
+                                                                        key={
+                                                                            option.value
                                                                         }
-                                                                    </div>
-                                                                </div>
-                                                                <div className="text-sm font-semibold text-gray-900 dark:text-gray-100">
-                                                                    {formatItemPrice(
-                                                                        item.price,
-                                                                    )}
-                                                                </div>
-                                                            </div>
-                                                        ))}
+                                                                        value={
+                                                                            option.value
+                                                                        }
+                                                                    >
+                                                                        {
+                                                                            option.label
+                                                                        }
+                                                                    </SelectItem>
+                                                                ),
+                                                            )}
+                                                        </SelectContent>
+                                                    </Select>
+                                                </TableCell>
+                                                <TableCell className="text-sm text-gray-900 dark:text-gray-100">
+                                                    <Select
+                                                        value={
+                                                            currentPaymentStatus
+                                                        }
+                                                        onValueChange={(value) =>
+                                                            setDraftStatuses(
+                                                                (previous) => ({
+                                                                    ...previous,
+                                                                    [orderKey]:
+                                                                        {
+                                                                            order_status:
+                                                                                currentOrderStatus,
+                                                                            payment_status:
+                                                                                value,
+                                                                        },
+                                                                }),
+                                                            )
+                                                        }
+                                                    >
+                                                        <SelectTrigger className="h-9 w-full rounded-md border border-gray-200 bg-white text-left text-sm text-gray-900 focus-visible:ring-indigo-500 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-100">
+                                                            <SelectValue placeholder="Select payment status" />
+                                                        </SelectTrigger>
+                                                        <SelectContent>
+                                                            {PAYMENT_STATUS_OPTIONS.map(
+                                                                (option) => (
+                                                                    <SelectItem
+                                                                        key={
+                                                                            option.value
+                                                                        }
+                                                                        value={
+                                                                            option.value
+                                                                        }
+                                                                    >
+                                                                        {
+                                                                            option.label
+                                                                        }
+                                                                    </SelectItem>
+                                                                ),
+                                                            )}
+                                                        </SelectContent>
+                                                    </Select>
+                                                </TableCell>
+                                                <TableCell className="text-sm text-gray-900 dark:text-gray-100">
+                                                    {order.total_formatted ??
+                                                        order.amount_formatted ??
+                                                        order.total_amount ??
+                                                        order.amount ??
+                                                        '—'}
+                                                </TableCell>
+                                                <TableCell className="text-right text-sm text-gray-900 dark:text-gray-100">
+                                                    {order.created_at ||
+                                                    order.ordered_at
+                                                        ? formatDateTimeForDisplay(
+                                                              order.created_at ??
+                                                                  order.ordered_at ??
+                                                                  '',
+                                                              {
+                                                                  month: 'short',
+                                                                  day: 'numeric',
+                                                                  year: 'numeric',
+                                                              },
+                                                          )
+                                                        : '—'}
+                                                </TableCell>
+                                                <TableCell className="text-right text-sm text-gray-900 dark:text-gray-100">
+                                                    <div className="flex items-center justify-end gap-2">
+                                                        <Button
+                                                            type="button"
+                                                            variant="ghost"
+                                                            size="sm"
+                                                            disabled={
+                                                                !hasChanges ||
+                                                                isUpdating
+                                                            }
+                                                            onClick={() =>
+                                                                setDraftStatuses(
+                                                                    (
+                                                                        previous,
+                                                                    ) => ({
+                                                                        ...previous,
+                                                                        [orderKey]:
+                                                                            {
+                                                                                order_status:
+                                                                                    normalizedOrderStatus,
+                                                                                payment_status:
+                                                                                    normalizedPaymentStatus,
+                                                                            },
+                                                                    }),
+                                                                )
+                                                            }
+                                                        >
+                                                            Reset
+                                                        </Button>
+                                                        <Button
+                                                            type="button"
+                                                            size="sm"
+                                                            disabled={
+                                                                !hasChanges ||
+                                                                isUpdating ||
+                                                                !canUpdateOrder
+                                                            }
+                                                            onClick={() =>
+                                                                onUpdateOrderStatus(
+                                                                    targetOrderId,
+                                                                    {
+                                                                        order_status:
+                                                                            currentOrderStatus,
+                                                                        payment_status:
+                                                                            currentPaymentStatus,
+                                                                    },
+                                                                )
+                                                            }
+                                                        >
+                                                            {isUpdating
+                                                                ? 'Saving…'
+                                                                : 'Save'}
+                                                        </Button>
                                                     </div>
                                                 </TableCell>
                                             </TableRow>
-                                        )}
-                                    </>
-                                ))}
+                                            {getOrderItems(order).length > 0 && (
+                                                <TableRow className="bg-gray-50/60 dark:bg-gray-800/60">
+                                                    <TableCell
+                                                        colSpan={6}
+                                                        className="p-4"
+                                                    >
+                                                        <div className="space-y-3">
+                                                            {getOrderItems(
+                                                                order,
+                                                            ).map((item) => (
+                                                                <div
+                                                                    key={`${order.id}-item-${item.id}`}
+                                                                    className="flex flex-col gap-2 border-b border-dashed border-gray-200 pb-3 last:border-b-0 last:pb-0 dark:border-gray-700"
+                                                                >
+                                                                    <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
+                                                                        <div>
+                                                                            <p className="text-sm font-medium text-gray-900 dark:text-gray-100">
+                                                                                {
+                                                                                    item.name
+                                                                                }
+                                                                            </p>
+                                                                            {item.attributes && (
+                                                                                <p className="text-xs text-gray-500 dark:text-gray-400">
+                                                                                    {
+                                                                                        item.attributes
+                                                                                    }
+                                                                                </p>
+                                                                            )}
+                                                                        </div>
+                                                                        <div className="text-sm text-gray-700 dark:text-gray-200">
+                                                                            Qty:{' '}
+                                                                            {
+                                                                                item.quantity
+                                                                            }
+                                                                        </div>
+                                                                    </div>
+                                                                    <div className="text-sm font-semibold text-gray-900 dark:text-gray-100">
+                                                                        {formatItemPrice(
+                                                                            item.price,
+                                                                        )}
+                                                                    </div>
+                                                                </div>
+                                                            ))}
+                                                        </div>
+                                                    </TableCell>
+                                                </TableRow>
+                                            )}
+                                        </Fragment>
+                                    );
+                                })}
                             </TableBody>
                         </Table>
                     </div>

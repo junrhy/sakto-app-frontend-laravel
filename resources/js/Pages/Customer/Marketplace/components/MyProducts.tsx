@@ -1,3 +1,4 @@
+import ImageUploader from '@/Components/ImageUploader';
 import { Badge } from '@/Components/ui/badge';
 import { Button } from '@/Components/ui/button';
 import {
@@ -63,6 +64,15 @@ interface MyProductsProps {
     appCurrencySymbol?: string;
 }
 
+interface ManagedProductImage {
+    id?: number;
+    image_url: string;
+    alt_text?: string;
+    is_primary: boolean;
+    sort_order: number;
+    file?: File;
+}
+
 export function MyProducts({
     projectIdentifier,
     ownerIdentifier,
@@ -74,6 +84,21 @@ export function MyProducts({
     const [orders, setOrders] = useState<ProductOrderItem[]>([]);
     const [ordersDialogOpen, setOrdersDialogOpen] = useState(false);
     const [ordersProductName, setOrdersProductName] = useState('');
+    const [ordersProductId, setOrdersProductId] = useState<
+        number | string | null
+    >(null);
+    const [updatingOrderId, setUpdatingOrderId] = useState<
+        number | string | null
+    >(null);
+    const [newProductImages, setNewProductImages] = useState<
+        ManagedProductImage[]
+    >([]);
+    const [editProductImages, setEditProductImages] = useState<
+        ManagedProductImage[]
+    >([]);
+    const [existingProductImages, setExistingProductImages] = useState<
+        ManagedProductImage[]
+    >([]);
 
     const fetchProducts = useCallback(async () => {
         setLoading(true);
@@ -164,6 +189,11 @@ export function MyProducts({
             Object.entries(data).forEach(([key, value]) => {
                 formData.append(key, value ?? '');
             });
+            newProductImages.forEach((image) => {
+                if (image.file) {
+                    formData.append('images[]', image.file);
+                }
+            });
 
             const response = await fetch(
                 route('customer.projects.marketplace.products.store', {
@@ -189,6 +219,7 @@ export function MyProducts({
             toast.success('Product created successfully');
             setCreateDialogOpen(false);
             reset();
+            setNewProductImages([]);
             fetchProducts();
         } catch (error) {
             toast.error('Unable to create product right now.');
@@ -207,6 +238,22 @@ export function MyProducts({
             sku: product.sku ?? '',
             stock_quantity: product.stock_quantity?.toString() ?? '',
         });
+        setExistingProductImages(
+            (product.images ?? []).map((image, index) => ({
+                id: image.id,
+                image_url: image.image_url ?? '',
+                alt_text: image.alt_text ?? '',
+                is_primary:
+                    image.is_primary !== undefined
+                        ? image.is_primary
+                        : index === 0,
+                sort_order:
+                    image.sort_order !== undefined
+                        ? image.sort_order
+                        : index,
+            })),
+        );
+        setEditProductImages([]);
         setEditDialogOpen(true);
     };
 
@@ -230,6 +277,11 @@ export function MyProducts({
             Object.entries(data).forEach(([key, value]) => {
                 if (value !== null && value !== undefined) {
                     formData.append(key, value);
+                }
+            });
+            editProductImages.forEach((image) => {
+                if (image.file) {
+                    formData.append('images[]', image.file);
                 }
             });
 
@@ -260,6 +312,8 @@ export function MyProducts({
             setEditDialogOpen(false);
             setEditingProduct(null);
             reset();
+            setEditProductImages([]);
+            setExistingProductImages([]);
             fetchProducts();
         } catch (error) {
             toast.error('Unable to update product right now.');
@@ -303,38 +357,146 @@ export function MyProducts({
         }
     };
 
-    const handleViewOrders = async (product: MarketplaceProduct) => {
-        setOrdersLoading(true);
-        setOrdersProductName(product.name);
+    const loadOrders = useCallback(
+        async (
+            productId: number | string,
+            productName: string = '',
+            openDialog: boolean = false,
+        ) => {
+            if (openDialog) {
+                setOrdersDialogOpen(true);
+            }
+            setOrdersLoading(true);
+            setOrdersProductId(productId);
+            if (productName) {
+                setOrdersProductName(productName);
+            }
+
+            try {
+                const response = await fetch(
+                    route('customer.projects.marketplace.products.orders', {
+                        project: projectIdentifier,
+                        owner: ownerIdentifier,
+                        product: productId,
+                    }),
+                    {
+                        headers: {
+                            Accept: 'application/json',
+                        },
+                    },
+                );
+
+                if (!response.ok) {
+                    throw new Error('Failed to fetch orders');
+                }
+
+                const payload = await response.json();
+                const data = payload['data'] ?? payload['orders'] ?? payload;
+                const normalizedOrders = Array.isArray(data) ? data : [];
+                setOrders(normalizedOrders);
+            } catch (error) {
+                toast.error('Unable to load product orders right now.');
+                if (openDialog) {
+                    setOrdersDialogOpen(false);
+                }
+            } finally {
+                setOrdersLoading(false);
+            }
+        },
+        [ownerIdentifier, projectIdentifier],
+    );
+
+    const handleViewOrders = (product: MarketplaceProduct) => {
+        loadOrders(product.id, product.name ?? '', true);
+    };
+
+    const handleOrderStatusUpdate = async (
+        orderId: number | string,
+        updates: { order_status?: string; payment_status?: string },
+    ) => {
+        if (!orderId) {
+            toast.error('Missing order identifier.');
+            return;
+        }
+
+        setUpdatingOrderId(orderId);
 
         try {
+            const csrfToken =
+                document
+                    .querySelector('meta[name="csrf-token"]')
+                    ?.getAttribute('content') ?? '';
+
             const response = await fetch(
-                route('customer.projects.marketplace.products.orders', {
+                route('customer.projects.marketplace.orders.update', {
                     project: projectIdentifier,
                     owner: ownerIdentifier,
-                    product: product.id,
+                    order: orderId,
                 }),
                 {
+                    method: 'PUT',
                     headers: {
                         Accept: 'application/json',
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': csrfToken,
                     },
+                    body: JSON.stringify(updates),
                 },
             );
 
+            const payload = await response
+                .json()
+                .catch(() => ({ error: 'Failed to process response' }));
+
             if (!response.ok) {
-                throw new Error('Failed to fetch orders');
+                throw new Error(
+                    payload?.error ?? 'Failed to update order status',
+                );
             }
 
-            const payload = await response.json();
-            const data = payload['data'] ?? payload['orders'] ?? payload;
-            const normalizedOrders = Array.isArray(data) ? data : [];
-            console.log('MyProducts product orders:', normalizedOrders);
-            setOrders(normalizedOrders);
-            setOrdersDialogOpen(true);
+            const updatedOrder =
+                payload?.order ??
+                payload?.data ??
+                (payload && typeof payload === 'object' ? payload : null);
+
+            if (updatedOrder) {
+                const updatedIdentifier =
+                    updatedOrder.id ??
+                    updatedOrder.order_number ??
+                    orderId;
+
+                setOrders((previous) =>
+                    previous.map((order) => {
+                        const currentIdentifier =
+                            order.id ?? order.order_number ?? '';
+
+                        if (
+                            String(currentIdentifier) ===
+                            String(updatedIdentifier)
+                        ) {
+                            return { ...order, ...updatedOrder };
+                        }
+
+                        return order;
+                    }),
+                );
+            } else if (ordersProductId) {
+                await loadOrders(
+                    ordersProductId,
+                    ordersProductName,
+                    false,
+                );
+            }
+
+            toast.success('Order updated successfully.');
         } catch (error) {
-            toast.error('Unable to load product orders right now.');
+            toast.error(
+                error instanceof Error
+                    ? error.message
+                    : 'Unable to update order status right now.',
+            );
         } finally {
-            setOrdersLoading(false);
+            setUpdatingOrderId(null);
         }
     };
 
@@ -349,7 +511,12 @@ export function MyProducts({
                         Manage your listings for this community marketplace.
                     </CardDescription>
                 </div>
-                    <Button onClick={() => setCreateDialogOpen(true)}>
+                    <Button
+                        onClick={() => {
+                            setNewProductImages([]);
+                            setCreateDialogOpen(true);
+                        }}
+                    >
                         Add Product
                     </Button>
             </CardHeader>
@@ -568,6 +735,7 @@ export function MyProducts({
                     setCreateDialogOpen(open);
                     if (!open) {
                         reset();
+                        setNewProductImages([]);
                     }
                 }}
             >
@@ -576,6 +744,7 @@ export function MyProducts({
                         <DialogTitle>Create Product Listing</DialogTitle>
                     </DialogHeader>
                     <form onSubmit={handleCreateProduct} className="space-y-4">
+                        <div className="max-h-[60vh] space-y-4 overflow-y-auto pr-1">
                         <div>
                             <Label htmlFor="product-name">Name</Label>
                             <Input
@@ -692,6 +861,12 @@ export function MyProducts({
                                 />
                             </div>
                         </div>
+                        <ImageUploader
+                            images={newProductImages}
+                            onImagesChange={setNewProductImages}
+                            maxImages={8}
+                        />
+                        </div>
                         <DialogFooter>
                             <Button
                                 type="button"
@@ -699,6 +874,7 @@ export function MyProducts({
                                 onClick={() => {
                                     setCreateDialogOpen(false);
                                     reset();
+                                    setNewProductImages([]);
                                 }}
                             >
                                 Cancel
@@ -718,6 +894,8 @@ export function MyProducts({
                     if (!open) {
                         setEditingProduct(null);
                         reset();
+                        setEditProductImages([]);
+                        setExistingProductImages([]);
                     }
                 }}
             >
@@ -726,6 +904,7 @@ export function MyProducts({
                         <DialogTitle>Edit Product Listing</DialogTitle>
                     </DialogHeader>
                     <form onSubmit={handleUpdateProduct} className="space-y-4">
+                        <div className="max-h-[60vh] space-y-4 overflow-y-auto pr-1">
                         <div>
                             <Label htmlFor="edit-product-name">Name</Label>
                             <Input
@@ -847,6 +1026,43 @@ export function MyProducts({
                                 />
                             </div>
                         </div>
+                        {existingProductImages.length > 0 && (
+                            <div className="space-y-2">
+                                <Label>Current Images</Label>
+                                <div className="grid grid-cols-2 gap-3 md:grid-cols-3">
+                                    {existingProductImages.map((image) => (
+                                        <div
+                                            key={image.id ?? image.sort_order}
+                                            className="relative overflow-hidden rounded-lg border border-gray-200 dark:border-gray-700"
+                                        >
+                                            <img
+                                                src={image.image_url}
+                                                alt={
+                                                    image.alt_text ||
+                                                    'Existing product image'
+                                                }
+                                                className="h-28 w-full object-cover"
+                                            />
+                                            {image.is_primary && (
+                                                <Badge className="absolute left-2 top-2 bg-yellow-500 text-xs font-semibold text-white hover:bg-yellow-500">
+                                                    Primary
+                                                </Badge>
+                                            )}
+                                        </div>
+                                    ))}
+                                </div>
+                                <p className="text-xs text-gray-500 dark:text-gray-400">
+                                    Uploading new images will append them to this
+                                    product after saving.
+                                </p>
+                            </div>
+                        )}
+                        <ImageUploader
+                            images={editProductImages}
+                            onImagesChange={setEditProductImages}
+                            maxImages={8}
+                        />
+                        </div>
                         <DialogFooter>
                             <Button
                                 type="button"
@@ -855,14 +1071,14 @@ export function MyProducts({
                                     setEditDialogOpen(false);
                                     setEditingProduct(null);
                                     reset();
+                                    setEditProductImages([]);
+                                    setExistingProductImages([]);
                                 }}
                             >
                                 Cancel
                             </Button>
                             <Button type="submit" disabled={processing}>
-                                {processing
-                                    ? 'Updating...'
-                                    : 'Update Product'}
+                                {processing ? 'Updating...' : 'Update Product'}
                             </Button>
                         </DialogFooter>
                     </form>
@@ -874,6 +1090,9 @@ export function MyProducts({
                 onOpenChange={setOrdersDialogOpen}
                 productName={ordersProductName}
                 orders={orders}
+                isLoading={ordersLoading}
+                onUpdateOrderStatus={handleOrderStatusUpdate}
+                updatingOrderId={updatingOrderId}
             />
         </Card>
     );

@@ -1746,7 +1746,6 @@ export const getBaseShippingMethods = (
     if (!rate) {
         // Default rates for unknown locations
         const baseStandardRate = 150;
-        const baseExpressRate = 250;
 
         return [
             {
@@ -1755,13 +1754,6 @@ export const getBaseShippingMethods = (
                 description: 'Regular ground shipping',
                 estimated_days: '5-7 business days',
                 price: baseStandardRate,
-            },
-            {
-                id: 'express',
-                name: 'Express Shipping',
-                description: 'Faster delivery service',
-                estimated_days: '2-3 business days',
-                price: baseExpressRate,
             },
         ];
     }
@@ -1773,13 +1765,6 @@ export const getBaseShippingMethods = (
             description: 'Regular ground shipping',
             estimated_days: rate.estimated_days.standard,
             price: rate.standard_rate,
-        },
-        {
-            id: 'express',
-            name: 'Express Shipping',
-            description: 'Faster delivery service',
-            estimated_days: rate.estimated_days.express,
-            price: rate.express_rate,
         },
     ];
 

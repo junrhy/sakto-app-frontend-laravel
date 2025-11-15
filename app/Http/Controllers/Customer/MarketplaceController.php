@@ -546,6 +546,56 @@ class MarketplaceController extends CustomerProjectController
         }
     }
 
+    public function updateOrder(Request $request, string $project, $ownerIdentifier, $orderId): JsonResponse
+    {
+        $this->ensureCustomerProject($request, $project);
+        $this->resolveOwner($project, $ownerIdentifier);
+
+        $validated = $request->validate([
+            'order_status' => 'nullable|string|in:pending,confirmed,processing,shipped,delivered,cancelled,refunded',
+            'payment_status' => 'nullable|string|in:pending,paid,failed,refunded,partially_refunded',
+        ]);
+
+        $payload = array_filter(
+            $validated,
+            static fn ($value) => $value !== null && $value !== '',
+        );
+
+        if (empty($payload)) {
+            return response()->json([
+                'error' => 'No updates provided',
+            ], 422);
+        }
+
+        try {
+            $response = Http::withToken($this->apiToken)
+                ->put("{$this->apiUrl}/product-orders/{$orderId}", $payload);
+
+            if ($response->successful()) {
+                return response()->json([
+                    'message' => 'Order updated successfully',
+                    'order' => $response->json(),
+                ]);
+            }
+
+            $responsePayload = $response->json();
+
+            return response()->json([
+                'error' => data_get($responsePayload, 'error') ?? 'Failed to update order',
+                'details' => $responsePayload,
+            ], $response->status());
+        } catch (\Throwable $th) {
+            Log::error('Marketplace order update failed', [
+                'order_id' => $orderId,
+                'message' => $th->getMessage(),
+            ]);
+
+            return response()->json([
+                'error' => 'Unable to update order at this time',
+            ], 500);
+        }
+    }
+
     protected function fetchMarketplaceProducts(User $owner, array $filters = []): array
     {
         $params = [];
