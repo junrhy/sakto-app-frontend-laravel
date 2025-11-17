@@ -95,7 +95,7 @@ export default function ProductCard({
 
     return (
         <div className="group break-inside-avoid overflow-hidden rounded-lg border border-gray-200 bg-white transition-all duration-200 hover:border-gray-300 hover:shadow-md dark:border-gray-700 dark:bg-gray-800 dark:hover:border-gray-600 dark:hover:shadow-gray-900/50">
-            <div className="relative flex h-36 sm:h-40 items-center justify-center overflow-hidden bg-gradient-to-br from-gray-100 to-gray-200 dark:from-gray-700 dark:to-gray-600">
+            <div className="relative flex h-36 items-center justify-center overflow-hidden bg-gradient-to-br from-gray-100 to-gray-200 dark:from-gray-700 dark:to-gray-600 sm:h-40">
                 {currentImage ? (
                     <>
                         <img
@@ -182,7 +182,7 @@ export default function ProductCard({
                 ) : (
                     <div className="flex h-full w-full items-center justify-center">
                         <svg
-                            className="h-10 w-10 sm:h-12 sm:w-12 text-gray-400 dark:text-gray-500"
+                            className="h-10 w-10 text-gray-400 dark:text-gray-500 sm:h-12 sm:w-12"
                             fill="none"
                             stroke="currentColor"
                             viewBox="0 0 24 24"
@@ -200,21 +200,21 @@ export default function ProductCard({
 
             <div className="p-3 sm:p-4">
                 <div className="mb-2">
-                    <h3 className="mb-1 line-clamp-1 text-base sm:text-lg font-semibold text-gray-900 dark:text-gray-100">
+                    <h3 className="mb-1 line-clamp-1 text-base font-semibold text-gray-900 dark:text-gray-100 sm:text-lg">
                         {product.name}
                     </h3>
-                    <p className="line-clamp-1 text-xs sm:text-sm text-gray-600 dark:text-gray-400">
+                    <p className="line-clamp-1 text-xs text-gray-600 dark:text-gray-400 sm:text-sm">
                         {product.description}
                     </p>
                 </div>
 
                 <div className="mb-2">
                     <div className="mb-1.5 flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
-                        <span className="text-base sm:text-lg font-bold text-gray-900 dark:text-gray-100">
+                        <span className="text-base font-bold text-gray-900 dark:text-gray-100 sm:text-lg">
                             {formatPrice(getEffectivePrice(product))}
                         </span>
                         <span
-                            className={`inline-block w-fit rounded-full px-2 py-0.5 text-xs sm:text-sm font-medium ${
+                            className={`inline-block w-fit rounded-full px-2 py-0.5 text-xs font-medium sm:text-sm ${
                                 getEffectiveStock(product) > 0
                                     ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400'
                                     : 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400'
@@ -244,7 +244,9 @@ export default function ProductCard({
                                 />
                             </svg>
                             <span className="whitespace-nowrap">
-                                {product.weight ? `${product.weight} kg` : 'Not specified'}
+                                {product.weight
+                                    ? `${product.weight} kg`
+                                    : 'Not specified'}
                             </span>
                         </span>
                         <span className="inline-flex items-center gap-1 rounded bg-gray-100 px-1.5 py-0.5 dark:bg-gray-700">
@@ -286,15 +288,14 @@ export default function ProductCard({
                         </span>
                     </div>
                 </div>
-
             </div>
 
-            <div className="border-t border-gray-200 bg-gray-50 p-2 sm:p-3 dark:border-gray-700 dark:bg-gray-800/50">
+            <div className="border-t border-gray-200 bg-gray-50 p-2 dark:border-gray-700 dark:bg-gray-800/50 sm:p-3">
                 {product.active_variants &&
                 product.active_variants.length > 0 ? (
                     <button
                         onClick={handleViewDetails}
-                        className="inline-flex w-full items-center justify-center rounded-lg bg-blue-600 px-3 py-1.5 text-xs sm:text-sm font-medium text-white shadow-sm transition-colors hover:bg-blue-700 hover:shadow-md dark:bg-blue-700 dark:hover:bg-blue-600"
+                        className="inline-flex w-full items-center justify-center rounded-lg bg-blue-600 px-3 py-1.5 text-xs font-medium text-white shadow-sm transition-colors hover:bg-blue-700 hover:shadow-md dark:bg-blue-700 dark:hover:bg-blue-600 sm:text-sm"
                     >
                         <svg
                             className="mr-1.5 h-3.5 w-3.5 sm:mr-2 sm:h-4 sm:w-4"
@@ -322,7 +323,7 @@ export default function ProductCard({
                     <div className="flex gap-1.5 sm:gap-2">
                         <button
                             onClick={handleViewDetails}
-                            className="inline-flex flex-1 items-center justify-center rounded-lg border border-gray-300 bg-white px-2 py-1.5 text-xs sm:text-sm font-medium text-gray-700 shadow-sm transition-colors hover:bg-gray-50 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600"
+                            className="inline-flex flex-1 items-center justify-center rounded-lg border border-gray-300 bg-white px-2 py-1.5 text-xs font-medium text-gray-700 shadow-sm transition-colors hover:bg-gray-50 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600 sm:text-sm"
                         >
                             <Eye className="mr-1 h-3.5 w-3.5 sm:mr-1.5 sm:h-4 sm:w-4" />
                             <span>View</span>
@@ -334,7 +335,7 @@ export default function ProductCard({
                                 (product.type === 'physical' &&
                                     (product.stock_quantity || 0) <= 0)
                             }
-                            className="inline-flex flex-1 items-center justify-center rounded-lg bg-blue-600 px-2 py-1.5 text-xs sm:text-sm font-medium text-white shadow-sm transition-colors hover:bg-blue-700 hover:shadow-md disabled:cursor-not-allowed disabled:opacity-50 dark:bg-blue-700 dark:hover:bg-blue-600"
+                            className="inline-flex flex-1 items-center justify-center rounded-lg bg-blue-600 px-2 py-1.5 text-xs font-medium text-white shadow-sm transition-colors hover:bg-blue-700 hover:shadow-md disabled:cursor-not-allowed disabled:opacity-50 dark:bg-blue-700 dark:hover:bg-blue-600 sm:text-sm"
                         >
                             <ShoppingCart className="mr-1 h-3.5 w-3.5 sm:mr-1.5 sm:h-4 sm:w-4" />
                             <span className="hidden sm:inline">

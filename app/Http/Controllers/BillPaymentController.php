@@ -4,7 +4,10 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Log;
 use Inertia\Inertia;
+use App\Mail\BillPaymentNotification;
 
 class BillPaymentController extends Controller
 {
@@ -157,9 +160,63 @@ class BillPaymentController extends Controller
             $response = Http::withToken($this->apiToken)
                 ->post("{$this->apiUrl}/bill-payments", $data);
             if ($response->successful()) {
-                return response()->json($response->json());
+                $responseData = $response->json();
+                
+                // Send email notification to customer
+                if (isset($responseData['data']) && isset($data['email']) && !empty($data['email'])) {
+                    try {
+                        $billPayment = $responseData['data'];
+                        $customerEmail = $data['email'];
+                        $customerName = $billPayment['customer_name'] ?? $data['customer_name'] ?? 'Customer';
+                        
+                        Mail::to($customerEmail)->send(
+                            new BillPaymentNotification($billPayment, $customerEmail, $customerName)
+                        );
+                        
+                        Log::info('Bill payment notification email sent', [
+                            'bill_id' => $billPayment['id'] ?? null,
+                            'email' => $customerEmail,
+                            'is_recurring' => $billPayment['is_recurring'] ?? false,
+                        ]);
+                    } catch (\Exception $e) {
+                        // Log error but don't fail the request
+                        Log::error('Failed to send bill payment notification email', [
+                            'error' => $e->getMessage(),
+                            'bill_data' => $responseData['data'] ?? null,
+                            'email' => $data['email'] ?? null,
+                        ]);
+                    }
+                }
+                
+                // Send email notification if a new recurring bill was created
+                if (isset($responseData['next_recurring_bill']) && 
+                    isset($responseData['next_recurring_bill']['email']) && 
+                    !empty($responseData['next_recurring_bill']['email'])) {
+                    try {
+                        $nextBill = $responseData['next_recurring_bill'];
+                        $customerEmail = $nextBill['email'];
+                        $customerName = $nextBill['customer_name'] ?? 'Customer';
+                        
+                        Mail::to($customerEmail)->send(
+                            new BillPaymentNotification($nextBill, $customerEmail, $customerName)
+                        );
+                        
+                        Log::info('Recurring bill payment notification email sent (from create)', [
+                            'bill_id' => $nextBill['id'] ?? null,
+                            'email' => $customerEmail,
+                            'frequency' => $nextBill['recurring_frequency'] ?? null,
+                        ]);
+                    } catch (\Exception $e) {
+                        // Log error but don't fail the request
+                        Log::error('Failed to send recurring bill payment notification email (from create)', [
+                            'error' => $e->getMessage(),
+                            'bill_data' => $responseData['next_recurring_bill'] ?? null,
+                        ]);
+                    }
+                }
+                
+                return response()->json($responseData);
             }
-            dd($response->json());
             return response()->json([
                 'success' => false,
                 'message' => 'Failed to create bill payment',
@@ -208,11 +265,41 @@ class BillPaymentController extends Controller
     public function update(Request $request, $id)
     {
         try {
+            $data = $request->all();
             $response = Http::withToken($this->apiToken)
-                ->put("{$this->apiUrl}/bill-payments/{$id}", $request->all());
+                ->put("{$this->apiUrl}/bill-payments/{$id}", $data);
 
             if ($response->successful()) {
-                return response()->json($response->json());
+                $responseData = $response->json();
+                
+                // Send email notification if a new recurring bill was created
+                if (isset($responseData['next_recurring_bill']) && 
+                    isset($responseData['next_recurring_bill']['email']) && 
+                    !empty($responseData['next_recurring_bill']['email'])) {
+                    try {
+                        $nextBill = $responseData['next_recurring_bill'];
+                        $customerEmail = $nextBill['email'];
+                        $customerName = $nextBill['customer_name'] ?? 'Customer';
+                        
+                        Mail::to($customerEmail)->send(
+                            new BillPaymentNotification($nextBill, $customerEmail, $customerName)
+                        );
+                        
+                        Log::info('Recurring bill payment notification email sent', [
+                            'bill_id' => $nextBill['id'] ?? null,
+                            'email' => $customerEmail,
+                            'frequency' => $nextBill['recurring_frequency'] ?? null,
+                        ]);
+                    } catch (\Exception $e) {
+                        // Log error but don't fail the request
+                        Log::error('Failed to send recurring bill payment notification email', [
+                            'error' => $e->getMessage(),
+                            'bill_data' => $responseData['next_recurring_bill'] ?? null,
+                        ]);
+                    }
+                }
+                
+                return response()->json($responseData);
             }
 
             return response()->json([

@@ -174,7 +174,7 @@ export function CommunityOverviewCard({
                 )}
 
                 {/* Other Details Grid */}
-                <div className="grid gap-3 sm:gap-4 sm:grid-cols-2">
+                <div className="grid gap-3 sm:grid-cols-2 sm:gap-4">
                     <div className="group rounded-lg border border-gray-200 bg-white p-3 transition-all duration-200 hover:border-indigo-300 hover:shadow-md dark:border-gray-700 dark:bg-gray-800/50 dark:hover:border-indigo-600 sm:col-span-2 sm:p-4">
                         <DetailItem
                             label="Email"

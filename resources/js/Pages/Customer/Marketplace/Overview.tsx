@@ -111,7 +111,11 @@ export default function MarketplaceOverviewPage({
                                 size="sm"
                                 className="shrink-0 sm:hidden"
                             >
-                                <Link href={backUrl ?? route('customer.dashboard')}>
+                                <Link
+                                    href={
+                                        backUrl ?? route('customer.dashboard')
+                                    }
+                                >
                                     ← Back
                                 </Link>
                             </Button>

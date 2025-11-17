@@ -1,7 +1,7 @@
-import { ShoppingCart, Trash2 } from 'lucide-react';
 import { Badge } from '@/Components/ui/badge';
 import { Button } from '@/Components/ui/button';
 import { Card, CardContent } from '@/Components/ui/card';
+import { ShoppingCart, Trash2 } from 'lucide-react';
 import type { MarketplaceCartItem } from './ProductGrid';
 
 interface ProductCartSummaryProps {

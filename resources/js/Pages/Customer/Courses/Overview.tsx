@@ -579,7 +579,11 @@ export default function CoursesOverviewPage({
                             Learning opportunities from {ownerName}.
                         </p>
                     </div>
-                    <Button asChild variant="outline" className="hidden sm:inline-flex">
+                    <Button
+                        asChild
+                        variant="outline"
+                        className="hidden sm:inline-flex"
+                    >
                         <Link href={backUrl ?? route('customer.dashboard')}>
                             &larr; Back
                         </Link>

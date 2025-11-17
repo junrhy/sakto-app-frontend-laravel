@@ -156,8 +156,7 @@ export function NewsfeedOverviewSection({
                             Newsfeed
                         </CardTitle>
                         <CardDescription className="text-white/90">
-                            Latest announcements and updates from this
-                            group.
+                            Latest announcements and updates from this group.
                         </CardDescription>
                     </div>
                 </CardHeader>
@@ -287,7 +286,7 @@ export function NewsfeedOverviewSection({
                                             <img
                                                 src={featuredImage}
                                                 alt={title}
-                                                className="w-full max-h-96 object-contain transition-transform duration-200 group-hover:scale-[1.02]"
+                                                className="max-h-96 w-full object-contain transition-transform duration-200 group-hover:scale-[1.02]"
                                             />
                                             {youtubeVideos.length > 0 && (
                                                 <div className="absolute inset-0 flex items-center justify-center bg-black/40 opacity-0 transition-opacity duration-200 group-hover:opacity-100">

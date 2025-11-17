@@ -242,7 +242,8 @@ export function ProductOrdersTable({
                             <TableBody>
                                 {orders.map((order, index) => {
                                     const orderKey = getOrderKey(order, index);
-                                    const currentDraft = draftStatuses[orderKey];
+                                    const currentDraft =
+                                        draftStatuses[orderKey];
                                     const normalizedOrderStatus =
                                         normalizeOrderStatus(order);
                                     const normalizedPaymentStatus =
@@ -258,8 +259,7 @@ export function ProductOrdersTable({
                                             normalizedOrderStatus ||
                                         currentPaymentStatus !==
                                             normalizedPaymentStatus;
-                                    const targetOrderId =
-                                        order.id ?? orderKey;
+                                    const targetOrderId = order.id ?? orderKey;
                                     const canUpdateOrder =
                                         order.id !== undefined &&
                                         order.id !== null;
@@ -285,7 +285,9 @@ export function ProductOrdersTable({
                                                         value={
                                                             currentOrderStatus
                                                         }
-                                                        onValueChange={(value) =>
+                                                        onValueChange={(
+                                                            value,
+                                                        ) =>
                                                             setDraftStatuses(
                                                                 (previous) => ({
                                                                     ...previous,
@@ -333,7 +335,9 @@ export function ProductOrdersTable({
                                                         value={
                                                             currentPaymentStatus
                                                         }
-                                                        onValueChange={(value) =>
+                                                        onValueChange={(
+                                                            value,
+                                                        ) =>
                                                             setDraftStatuses(
                                                                 (previous) => ({
                                                                     ...previous,
@@ -449,7 +453,8 @@ export function ProductOrdersTable({
                                                     </div>
                                                 </TableCell>
                                             </TableRow>
-                                            {getOrderItems(order).length > 0 && (
+                                            {getOrderItems(order).length >
+                                                0 && (
                                                 <TableRow className="bg-gray-50/60 dark:bg-gray-800/60">
                                                     <TableCell
                                                         colSpan={6}

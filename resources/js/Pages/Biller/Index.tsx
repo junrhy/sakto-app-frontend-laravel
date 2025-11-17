@@ -264,7 +264,7 @@ export default function Biller({ auth }: { auth: any }) {
 
     return (
         <AuthenticatedLayout user={auth.user}>
-            <div className="container mx-auto py-6">
+            <div className="w-full px-6 py-6">
                 <div className="mb-6 flex items-center justify-between">
                     <div>
                         <h1 className="text-3xl font-bold">Billers</h1>

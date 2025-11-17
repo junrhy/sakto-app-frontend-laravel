@@ -2,11 +2,7 @@ import { Button } from '@/Components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/Components/ui/tabs';
 import type { PageProps } from '@/types';
 import { router, usePage } from '@inertiajs/react';
-import {
-    Package,
-    ShoppingBag,
-    Store,
-} from 'lucide-react';
+import { Package, ShoppingBag, Store } from 'lucide-react';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { toast } from 'sonner';
 import {
@@ -374,7 +370,7 @@ export default function ProductsSection({
             // No cart found, use the preferred key
             const preferredKey = cartKeyCandidates[0];
             if (preferredKey && storageKey !== preferredKey) {
-        setStorageKey(preferredKey);
+                setStorageKey(preferredKey);
             }
         }
     }, [cartKeyCandidates, isBrowser]); // Removed cartItems and storageKey from dependencies to avoid loops
@@ -801,21 +797,21 @@ export default function ProductsSection({
                 <TabsList className="mb-6 grid h-auto w-full grid-cols-1 gap-2 rounded-xl border border-gray-200 bg-gray-100 p-2 shadow-sm dark:border-gray-700 dark:bg-gray-800 sm:grid-cols-3">
                     <TabsTrigger
                         value="products"
-                        className="group flex items-center justify-center gap-2 rounded-lg px-4 py-3 text-sm font-medium transition-all duration-200 data-[state=active]:bg-white data-[state=active]:text-blue-600 data-[state=active]:shadow-sm data-[state=inactive]:text-gray-600 data-[state=inactive]:hover:bg-gray-50 dark:data-[state=active]:bg-gray-700 dark:data-[state=active]:text-blue-400 dark:data-[state=inactive]:text-gray-400 dark:data-[state=inactive]:hover:bg-gray-700/50"
+                        className="group flex items-center justify-center gap-2 rounded-lg px-4 py-3 text-sm font-medium transition-all duration-200 data-[state=active]:bg-white data-[state=active]:text-blue-600 data-[state=inactive]:text-gray-600 data-[state=active]:shadow-sm data-[state=inactive]:hover:bg-gray-50 dark:data-[state=active]:bg-gray-700 dark:data-[state=active]:text-blue-400 dark:data-[state=inactive]:text-gray-400 dark:data-[state=inactive]:hover:bg-gray-700/50"
                     >
                         <Package className="h-4 w-4" />
                         <span>Products</span>
                     </TabsTrigger>
                     <TabsTrigger
                         value="orders"
-                        className="group flex items-center justify-center gap-2 rounded-lg px-4 py-3 text-sm font-medium transition-all duration-200 data-[state=active]:bg-white data-[state=active]:text-blue-600 data-[state=active]:shadow-sm data-[state=inactive]:text-gray-600 data-[state=inactive]:hover:bg-gray-50 dark:data-[state=active]:bg-gray-700 dark:data-[state=active]:text-blue-400 dark:data-[state=inactive]:text-gray-400 dark:data-[state=inactive]:hover:bg-gray-700/50"
+                        className="group flex items-center justify-center gap-2 rounded-lg px-4 py-3 text-sm font-medium transition-all duration-200 data-[state=active]:bg-white data-[state=active]:text-blue-600 data-[state=inactive]:text-gray-600 data-[state=active]:shadow-sm data-[state=inactive]:hover:bg-gray-50 dark:data-[state=active]:bg-gray-700 dark:data-[state=active]:text-blue-400 dark:data-[state=inactive]:text-gray-400 dark:data-[state=inactive]:hover:bg-gray-700/50"
                     >
                         <ShoppingBag className="h-4 w-4" />
                         <span>Orders</span>
                     </TabsTrigger>
                     <TabsTrigger
                         value="my-products"
-                        className="group flex items-center justify-center gap-2 rounded-lg px-4 py-3 text-sm font-medium transition-all duration-200 data-[state=active]:bg-white data-[state=active]:text-blue-600 data-[state=active]:shadow-sm data-[state=inactive]:text-gray-600 data-[state=inactive]:hover:bg-gray-50 dark:data-[state=active]:bg-gray-700 dark:data-[state=active]:text-blue-400 dark:data-[state=inactive]:text-gray-400 dark:data-[state=inactive]:hover:bg-gray-700/50"
+                        className="group flex items-center justify-center gap-2 rounded-lg px-4 py-3 text-sm font-medium transition-all duration-200 data-[state=active]:bg-white data-[state=active]:text-blue-600 data-[state=inactive]:text-gray-600 data-[state=active]:shadow-sm data-[state=inactive]:hover:bg-gray-50 dark:data-[state=active]:bg-gray-700 dark:data-[state=active]:text-blue-400 dark:data-[state=inactive]:text-gray-400 dark:data-[state=inactive]:hover:bg-gray-700/50"
                     >
                         <Store className="h-4 w-4" />
                         <span>My Products</span>

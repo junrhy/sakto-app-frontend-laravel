@@ -11,15 +11,7 @@ import {
 import CustomerLayout from '@/Layouts/Customer/CustomerLayout';
 import { PageProps } from '@/types';
 import { Head, Link } from '@inertiajs/react';
-import {
-    ArrowLeft,
-    Box,
-    Layers,
-    Minus,
-    Plus,
-    ShoppingBag,
-    Tag,
-} from 'lucide-react';
+import { ArrowLeft, Layers, Minus, Plus, ShoppingBag, Tag } from 'lucide-react';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { toast } from 'sonner';
 
@@ -355,9 +347,7 @@ export default function MarketplaceProduct({
     };
 
     const incrementQuantity = () => {
-        setQuantity((prev) =>
-            Math.min(maxSimpleQuantity, prev + 1),
-        );
+        setQuantity((prev) => Math.min(maxSimpleQuantity, prev + 1));
     };
     const checkoutRoute = route('customer.projects.marketplace.checkout', {
         project: projectIdentifier,
@@ -553,12 +543,16 @@ export default function MarketplaceProduct({
                                                         product.thumbnail_url ??
                                                         undefined,
                                                 }}
-                                                variants={variantSelectorVariants}
+                                                variants={
+                                                    variantSelectorVariants
+                                                }
                                                 currency={{
                                                     symbol: currencySymbol,
                                                     code: currencyCode,
                                                 }}
-                                                onAddToCart={handleVariantAddToCart}
+                                                onAddToCart={
+                                                    handleVariantAddToCart
+                                                }
                                                 maxQuantity={MAX_QUANTITY}
                                             />
                                             <Button asChild className="w-full">
@@ -576,7 +570,9 @@ export default function MarketplaceProduct({
                                                 <div className="flex items-center rounded-full border border-gray-200 bg-white shadow-sm dark:border-gray-700 dark:bg-gray-800">
                                                     <button
                                                         type="button"
-                                                        onClick={decrementQuantity}
+                                                        onClick={
+                                                            decrementQuantity
+                                                        }
                                                         className="flex h-8 w-8 items-center justify-center text-gray-600 hover:text-indigo-600 dark:text-gray-300 dark:hover:text-indigo-300"
                                                     >
                                                         <Minus className="h-4 w-4" />
@@ -586,8 +582,13 @@ export default function MarketplaceProduct({
                                                     </span>
                                                     <button
                                                         type="button"
-                                                        onClick={incrementQuantity}
-                                                        disabled={quantity >= maxSimpleQuantity}
+                                                        onClick={
+                                                            incrementQuantity
+                                                        }
+                                                        disabled={
+                                                            quantity >=
+                                                            maxSimpleQuantity
+                                                        }
                                                         className="flex h-8 w-8 items-center justify-center text-gray-600 hover:text-indigo-600 disabled:opacity-50 dark:text-gray-300 dark:hover:text-indigo-300"
                                                     >
                                                         <Plus className="h-4 w-4" />
@@ -597,8 +598,10 @@ export default function MarketplaceProduct({
                                             <Button
                                                 onClick={handleSimpleAddToCart}
                                                 disabled={
-                                                    product.status !== 'published' ||
-                                                    (product.type === 'physical' &&
+                                                    product.status !==
+                                                        'published' ||
+                                                    (product.type ===
+                                                        'physical' &&
                                                         physicalStock <= 0)
                                                 }
                                                 className="w-full"
@@ -620,8 +623,10 @@ export default function MarketplaceProduct({
                                     {cartItems.length > 0 && (
                                         <p className="mt-2 text-xs text-gray-500 dark:text-gray-400">
                                             {cartItems.length} item
-                                            {cartItems.length === 1 ? '' : 's'} in
-                                            cart
+                                            {cartItems.length === 1
+                                                ? ''
+                                                : 's'}{' '}
+                                            in cart
                                         </p>
                                     )}
                                 </div>

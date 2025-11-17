@@ -57,7 +57,8 @@ export default function Jobs({ auth, community, project, jobs }: JobsProps) {
     const [searchQuery, setSearchQuery] = useState('');
     const [employmentFilter, setEmploymentFilter] = useState('all');
     const [locationFilter, setLocationFilter] = useState('all');
-    const ownerIdentifier = community.slug ?? community.identifier ?? community.id;
+    const ownerIdentifier =
+        community.slug ?? community.identifier ?? community.id;
     const projectIdentifier = project ?? 'community';
     const sidebarSections = useMemo(
         () =>
@@ -172,11 +173,17 @@ export default function Jobs({ auth, community, project, jobs }: JobsProps) {
                             Roles published by {community.name}
                         </p>
                     </div>
-                    <Button asChild variant="outline" className="hidden sm:inline-flex">
+                    <Button
+                        asChild
+                        variant="outline"
+                        className="hidden sm:inline-flex"
+                    >
                         <Link
                             href={route('customer.communities.show', {
                                 community:
-                                    community.slug ?? community.identifier ?? community.id,
+                                    community.slug ??
+                                    community.identifier ??
+                                    community.id,
                             })}
                         >
                             &larr; Back
@@ -287,8 +294,9 @@ export default function Jobs({ auth, community, project, jobs }: JobsProps) {
                                             {formatSalary(job)}
                                         </TableCell>
                                         <TableCell className="text-gray-900 dark:text-white">
-                                            {formatDate(job.application_deadline) ||
-                                                'Open until filled'}
+                                            {formatDate(
+                                                job.application_deadline,
+                                            ) || 'Open until filled'}
                                         </TableCell>
                                         <TableCell className="text-right">
                                             <Link

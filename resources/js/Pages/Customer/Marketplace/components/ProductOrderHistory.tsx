@@ -130,7 +130,7 @@ const getOrderItems = (order: ProductOrderItem) =>
                 ? Object.entries(attributes)
                       .map(([key, value]) => `${key}: ${value}`)
                       .join(' • ')
-                : typed?.variant_name ?? '';
+                : (typed?.variant_name ?? '');
 
         return {
             id: typed.id ?? index,
@@ -267,10 +267,8 @@ export function ProductOrderHistory({
                                                 >
                                                     {orderStatus
                                                         .replace(/_/g, ' ')
-                                                        .replace(
-                                                            /\b\w/g,
-                                                            (l) =>
-                                                                l.toUpperCase(),
+                                                        .replace(/\b\w/g, (l) =>
+                                                            l.toUpperCase(),
                                                         )}
                                                 </Badge>
                                             </TableCell>
@@ -298,7 +296,9 @@ export function ProductOrderHistory({
                                             <TableCell className="text-gray-900 dark:text-white">
                                                 <span className="text-sm">
                                                     {itemsCount} item
-                                                    {itemsCount !== 1 ? 's' : ''}
+                                                    {itemsCount !== 1
+                                                        ? 's'
+                                                        : ''}
                                                 </span>
                                             </TableCell>
                                             <TableCell className="text-gray-900 dark:text-white">

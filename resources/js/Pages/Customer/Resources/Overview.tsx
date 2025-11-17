@@ -145,7 +145,7 @@ export function ResourcesOverviewSection({
 
                             const resourceUrl = isExternal
                                 ? externalUrl
-                                : publicResourceUrl ??
+                                : (publicResourceUrl ??
                                   (hasProjectContext
                                       ? route(
                                             'customer.projects.resources.overview',
@@ -154,7 +154,7 @@ export function ResourcesOverviewSection({
                                                 owner: ownerIdentifier,
                                             },
                                         )
-                                      : '#');
+                                      : '#'));
 
                             const isPublicRouteLink =
                                 !isExternal && Boolean(publicResourceUrl);
@@ -313,7 +313,11 @@ export default function ResourcesOverviewPage({
                             Helpful guides and documents from {ownerName}.
                         </p>
                     </div>
-                    <Button asChild variant="outline" className="hidden sm:inline-flex">
+                    <Button
+                        asChild
+                        variant="outline"
+                        className="hidden sm:inline-flex"
+                    >
                         <Link href={backUrl ?? route('customer.dashboard')}>
                             &larr; Back
                         </Link>

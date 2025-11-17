@@ -8,6 +8,7 @@ import {
     CardTitle,
 } from '@/Components/ui/card';
 import { Input } from '@/Components/ui/input';
+import { Label } from '@/Components/ui/label';
 import {
     Select,
     SelectContent,
@@ -24,7 +25,6 @@ import {
     TableRow,
 } from '@/Components/ui/table';
 import { Textarea } from '@/Components/ui/textarea';
-import { Label } from '@/Components/ui/label';
 import AdminLayout from '@/Layouts/Admin/AdminLayout';
 import { PageProps } from '@/types';
 import { Head, useForm } from '@inertiajs/react';
@@ -96,16 +96,13 @@ export default function SubdomainRedirectsIndex({
         e.preventDefault();
 
         if (editingId) {
-            form.put(
-                route('admin.subdomain-redirects.update', editingId),
-                {
-                    preserveScroll: true,
-                    onSuccess: () => {
-                        toast.success('Redirect updated.');
-                        setEditingId(undefined);
-                    },
+            form.put(route('admin.subdomain-redirects.update', editingId), {
+                preserveScroll: true,
+                onSuccess: () => {
+                    toast.success('Redirect updated.');
+                    setEditingId(undefined);
                 },
-            );
+            });
         } else {
             form.post(route('admin.subdomain-redirects.store'), {
                 preserveScroll: true,
@@ -219,9 +216,7 @@ export default function SubdomainRedirectsIndex({
                                             {statusOptions.map((option) => (
                                                 <SelectItem
                                                     key={option.value}
-                                                    value={String(
-                                                        option.value,
-                                                    )}
+                                                    value={String(option.value)}
                                                 >
                                                     {option.label}
                                                 </SelectItem>
@@ -263,7 +258,10 @@ export default function SubdomainRedirectsIndex({
                                         id="notes"
                                         value={form.data.notes}
                                         onChange={(e) =>
-                                            form.setData('notes', e.target.value)
+                                            form.setData(
+                                                'notes',
+                                                e.target.value,
+                                            )
                                         }
                                         placeholder="Optional notes about this redirect"
                                         className="min-h-[80px]"
@@ -280,7 +278,9 @@ export default function SubdomainRedirectsIndex({
                                     type="submit"
                                     disabled={form.processing}
                                 >
-                                    {editingId ? 'Update Redirect' : 'Add Redirect'}
+                                    {editingId
+                                        ? 'Update Redirect'
+                                        : 'Add Redirect'}
                                 </Button>
                                 {editingId && (
                                     <Button
@@ -364,7 +364,9 @@ export default function SubdomainRedirectsIndex({
                                                 </Badge>
                                             )}
                                         </TableCell>
-                                        <TableCell>{redirect.http_status}</TableCell>
+                                        <TableCell>
+                                            {redirect.http_status}
+                                        </TableCell>
                                         <TableCell>
                                             {new Date(
                                                 redirect.updated_at,
@@ -404,4 +406,3 @@ export default function SubdomainRedirectsIndex({
         </AdminLayout>
     );
 }
-

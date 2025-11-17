@@ -148,7 +148,8 @@ export function MyProducts({
 
     const [createDialogOpen, setCreateDialogOpen] = useState(false);
     const [editDialogOpen, setEditDialogOpen] = useState(false);
-    const [editingProduct, setEditingProduct] = useState<MarketplaceProduct | null>(null);
+    const [editingProduct, setEditingProduct] =
+        useState<MarketplaceProduct | null>(null);
 
     const formattedCurrency = useCallback(
         (value: number | string | null | undefined) => {
@@ -248,9 +249,7 @@ export function MyProducts({
                         ? image.is_primary
                         : index === 0,
                 sort_order:
-                    image.sort_order !== undefined
-                        ? image.sort_order
-                        : index,
+                    image.sort_order !== undefined ? image.sort_order : index,
             })),
         );
         setEditProductImages([]);
@@ -273,7 +272,7 @@ export function MyProducts({
             const formData = new FormData();
             // Add method override for Laravel to handle PUT with FormData
             formData.append('_method', 'PUT');
-            
+
             Object.entries(data).forEach(([key, value]) => {
                 if (value !== null && value !== undefined) {
                     formData.append(key, value);
@@ -461,9 +460,7 @@ export function MyProducts({
 
             if (updatedOrder) {
                 const updatedIdentifier =
-                    updatedOrder.id ??
-                    updatedOrder.order_number ??
-                    orderId;
+                    updatedOrder.id ?? updatedOrder.order_number ?? orderId;
 
                 setOrders((previous) =>
                     previous.map((order) => {
@@ -481,11 +478,7 @@ export function MyProducts({
                     }),
                 );
             } else if (ordersProductId) {
-                await loadOrders(
-                    ordersProductId,
-                    ordersProductName,
-                    false,
-                );
+                await loadOrders(ordersProductId, ordersProductName, false);
             }
 
             toast.success('Order updated successfully.');
@@ -511,14 +504,14 @@ export function MyProducts({
                         Manage your listings for this community marketplace.
                     </CardDescription>
                 </div>
-                    <Button
-                        onClick={() => {
-                            setNewProductImages([]);
-                            setCreateDialogOpen(true);
-                        }}
-                    >
-                        Add Product
-                    </Button>
+                <Button
+                    onClick={() => {
+                        setNewProductImages([]);
+                        setCreateDialogOpen(true);
+                    }}
+                >
+                    Add Product
+                </Button>
             </CardHeader>
             <CardContent className="space-y-4">
                 {loading ? (
@@ -566,9 +559,10 @@ export function MyProducts({
                                         if (product.thumbnail_url) {
                                             return product.thumbnail_url;
                                         }
-                                        const primaryImage = product.images?.find(
-                                            (img) => img.is_primary,
-                                        );
+                                        const primaryImage =
+                                            product.images?.find(
+                                                (img) => img.is_primary,
+                                            );
                                         if (primaryImage) {
                                             return primaryImage.image_url;
                                         }
@@ -600,19 +594,23 @@ export function MyProducts({
                                                         </div>
                                                     )}
                                                     <div>
-                                            <div className="font-medium">
-                                                {product.name}
-                                            </div>
-                                            {product.category && (
-                                                <div className="text-xs text-gray-500 dark:text-gray-400">
-                                                    {product.category}
-                                                </div>
-                                            )}
+                                                        <div className="font-medium">
+                                                            {product.name}
+                                                        </div>
+                                                        {product.category && (
+                                                            <div className="text-xs text-gray-500 dark:text-gray-400">
+                                                                {
+                                                                    product.category
+                                                                }
+                                                            </div>
+                                                        )}
                                                         {variantsCount > 0 && (
                                                             <div className="mt-1 flex items-center gap-1 text-xs text-gray-500 dark:text-gray-400">
                                                                 <Package className="h-3 w-3" />
-                                                                {variantsCount} variant
-                                                                {variantsCount !== 1
+                                                                {variantsCount}{' '}
+                                                                variant
+                                                                {variantsCount !==
+                                                                1
                                                                     ? 's'
                                                                     : ''}
                                                             </div>
@@ -629,16 +627,16 @@ export function MyProducts({
                                                 </Badge>
                                             </TableCell>
                                             <TableCell className="text-gray-900 dark:text-white">
-                                            <Badge
-                                                variant="secondary"
-                                                className="capitalize"
-                                            >
-                                                {product.status ?? 'draft'}
-                                            </Badge>
+                                                <Badge
+                                                    variant="secondary"
+                                                    className="capitalize"
+                                                >
+                                                    {product.status ?? 'draft'}
+                                                </Badge>
                                             </TableCell>
                                             <TableCell className="text-gray-900 dark:text-white">
                                                 {product.sku ? (
-                                                    <span className="text-sm font-mono">
+                                                    <span className="font-mono text-sm">
                                                         {product.sku}
                                                     </span>
                                                 ) : (
@@ -663,25 +661,25 @@ export function MyProducts({
                                             </TableCell>
                                             <TableCell className="text-gray-900 dark:text-white">
                                                 <span className="font-medium">
-                                            {formattedCurrency(
-                                                product.price ?? 0,
-                                            )}
+                                                    {formattedCurrency(
+                                                        product.price ?? 0,
+                                                    )}
                                                 </span>
                                             </TableCell>
                                             <TableCell className="text-gray-900 dark:text-white">
                                                 {product.created_at
-                                                ? formatDateTimeForDisplay(
+                                                    ? formatDateTimeForDisplay(
                                                           product.created_at,
-                                                      {
-                                                          month: 'short',
-                                                          day: 'numeric',
-                                                          year: 'numeric',
-                                                      },
-                                                  )
-                                                : '—'}
+                                                          {
+                                                              month: 'short',
+                                                              day: 'numeric',
+                                                              year: 'numeric',
+                                                          },
+                                                      )
+                                                    : '—'}
                                             </TableCell>
                                             <TableCell className="text-right text-gray-900 dark:text-white">
-                                            <div className="flex flex-wrap justify-end gap-2">
+                                                <div className="flex flex-wrap justify-end gap-2">
                                                     <Button
                                                         variant="outline"
                                                         size="sm"
@@ -693,30 +691,30 @@ export function MyProducts({
                                                     >
                                                         Edit
                                                     </Button>
-                                                <Button
-                                                    variant="outline"
-                                                    size="sm"
-                                                    onClick={() =>
-                                                        handleViewOrders(
-                                                            product,
-                                                        )
-                                                    }
-                                                    disabled={ordersLoading}
-                                                >
-                                                    Orders
-                                                </Button>
-                                                <Button
-                                                    variant="destructive"
-                                                    size="sm"
-                                                    onClick={() =>
-                                                        handleDeleteProduct(
-                                                            product.id,
-                                                        )
-                                                    }
-                                                >
-                                                    Delete
-                                                </Button>
-                                            </div>
+                                                    <Button
+                                                        variant="outline"
+                                                        size="sm"
+                                                        onClick={() =>
+                                                            handleViewOrders(
+                                                                product,
+                                                            )
+                                                        }
+                                                        disabled={ordersLoading}
+                                                    >
+                                                        Orders
+                                                    </Button>
+                                                    <Button
+                                                        variant="destructive"
+                                                        size="sm"
+                                                        onClick={() =>
+                                                            handleDeleteProduct(
+                                                                product.id,
+                                                            )
+                                                        }
+                                                    >
+                                                        Delete
+                                                    </Button>
+                                                </div>
                                             </TableCell>
                                         </TableRow>
                                     );
@@ -745,127 +743,146 @@ export function MyProducts({
                     </DialogHeader>
                     <form onSubmit={handleCreateProduct} className="space-y-4">
                         <div className="max-h-[60vh] space-y-4 overflow-y-auto pr-1">
-                        <div>
-                            <Label htmlFor="product-name">Name</Label>
-                            <Input
-                                id="product-name"
-                                value={data.name}
-                                onChange={(event) =>
-                                    setData('name', event.target.value)
-                                }
-                                required
-                            />
-                        </div>
-                        <div>
-                            <Label htmlFor="product-description">
-                                Description
-                            </Label>
-                            <Textarea
-                                id="product-description"
-                                rows={3}
-                                value={data.description}
-                                onChange={(event) =>
-                                    setData('description', event.target.value)
-                                }
-                            />
-                        </div>
-                        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                             <div>
-                                <Label htmlFor="product-price">Price</Label>
+                                <Label htmlFor="product-name">Name</Label>
                                 <Input
-                                    id="product-price"
-                                    type="number"
-                                    min="0"
-                                    step="0.01"
-                                    value={data.price}
+                                    id="product-name"
+                                    value={data.name}
                                     onChange={(event) =>
-                                        setData('price', event.target.value)
+                                        setData('name', event.target.value)
                                     }
+                                    required
                                 />
                             </div>
                             <div>
-                                <Label htmlFor="product-stock">
-                                    Stock Quantity
+                                <Label htmlFor="product-description">
+                                    Description
                                 </Label>
-                                <Input
-                                    id="product-stock"
-                                    type="number"
-                                    min="0"
-                                    value={data.stock_quantity}
+                                <Textarea
+                                    id="product-description"
+                                    rows={3}
+                                    value={data.description}
                                     onChange={(event) =>
                                         setData(
-                                            'stock_quantity',
+                                            'description',
                                             event.target.value,
                                         )
                                     }
                                 />
                             </div>
-                        </div>
-                        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-                            <div>
-                                <Label htmlFor="product-category">
-                                    Category
-                                </Label>
-                                <Input
-                                    id="product-category"
-                                    value={data.category}
-                                    onChange={(event) =>
-                                        setData('category', event.target.value)
-                                    }
-                                />
+                            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                                <div>
+                                    <Label htmlFor="product-price">Price</Label>
+                                    <Input
+                                        id="product-price"
+                                        type="number"
+                                        min="0"
+                                        step="0.01"
+                                        value={data.price}
+                                        onChange={(event) =>
+                                            setData('price', event.target.value)
+                                        }
+                                    />
+                                </div>
+                                <div>
+                                    <Label htmlFor="product-stock">
+                                        Stock Quantity
+                                    </Label>
+                                    <Input
+                                        id="product-stock"
+                                        type="number"
+                                        min="0"
+                                        value={data.stock_quantity}
+                                        onChange={(event) =>
+                                            setData(
+                                                'stock_quantity',
+                                                event.target.value,
+                                            )
+                                        }
+                                    />
+                                </div>
                             </div>
-                            <div>
-                                <Label htmlFor="product-status">Status</Label>
-                                <select
-                                    id="product-status"
-                                    className="w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 focus:border-blue-500 focus:ring-2 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100"
-                                    value={data.status}
-                                    onChange={(event) =>
-                                        setData('status', event.target.value)
-                                    }
-                                >
-                                    <option value="draft">Draft</option>
-                                    <option value="published">Published</option>
-                                    <option value="archived">Archived</option>
-                                    <option value="inactive">Inactive</option>
-                                </select>
+                            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                                <div>
+                                    <Label htmlFor="product-category">
+                                        Category
+                                    </Label>
+                                    <Input
+                                        id="product-category"
+                                        value={data.category}
+                                        onChange={(event) =>
+                                            setData(
+                                                'category',
+                                                event.target.value,
+                                            )
+                                        }
+                                    />
+                                </div>
+                                <div>
+                                    <Label htmlFor="product-status">
+                                        Status
+                                    </Label>
+                                    <select
+                                        id="product-status"
+                                        className="w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 focus:border-blue-500 focus:ring-2 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100"
+                                        value={data.status}
+                                        onChange={(event) =>
+                                            setData(
+                                                'status',
+                                                event.target.value,
+                                            )
+                                        }
+                                    >
+                                        <option value="draft">Draft</option>
+                                        <option value="published">
+                                            Published
+                                        </option>
+                                        <option value="archived">
+                                            Archived
+                                        </option>
+                                        <option value="inactive">
+                                            Inactive
+                                        </option>
+                                    </select>
+                                </div>
                             </div>
-                        </div>
-                        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-                            <div>
-                                <Label htmlFor="product-type">Type</Label>
-                                <select
-                                    id="product-type"
-                                    className="w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 focus:border-blue-500 focus:ring-2 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100"
-                                    value={data.type}
-                                    onChange={(event) =>
-                                        setData('type', event.target.value)
-                                    }
-                                >
-                                    <option value="physical">Physical</option>
-                                    <option value="digital">Digital</option>
-                                    <option value="service">Service</option>
-                                    <option value="subscription">
-                                        Subscription
-                                    </option>
-                                </select>
+                            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                                <div>
+                                    <Label htmlFor="product-type">Type</Label>
+                                    <select
+                                        id="product-type"
+                                        className="w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 focus:border-blue-500 focus:ring-2 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100"
+                                        value={data.type}
+                                        onChange={(event) =>
+                                            setData('type', event.target.value)
+                                        }
+                                    >
+                                        <option value="physical">
+                                            Physical
+                                        </option>
+                                        <option value="digital">Digital</option>
+                                        <option value="service">Service</option>
+                                        <option value="subscription">
+                                            Subscription
+                                        </option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <Label htmlFor="product-sku">SKU</Label>
+                                    <Input
+                                        id="product-sku"
+                                        value={data.sku}
+                                        onChange={(event) =>
+                                            setData('sku', event.target.value)
+                                        }
+                                    />
+                                </div>
                             </div>
-                            <div>
-                                <Label htmlFor="product-sku">SKU</Label>
-                                <Input
-                                    id="product-sku"
-                                    value={data.sku}
-                                    onChange={(event) =>
-                                        setData('sku', event.target.value)
-                                    }
-                                />
-                            </div>
-                        </div>
-                        <ImageUploader
-                            images={newProductImages}
-                            onImagesChange={setNewProductImages}
-                            maxImages={8}
-                        />
+                            <ImageUploader
+                                images={newProductImages}
+                                onImagesChange={setNewProductImages}
+                                maxImages={8}
+                            />
                         </div>
                         <DialogFooter>
                             <Button
@@ -905,163 +922,185 @@ export function MyProducts({
                     </DialogHeader>
                     <form onSubmit={handleUpdateProduct} className="space-y-4">
                         <div className="max-h-[60vh] space-y-4 overflow-y-auto pr-1">
-                        <div>
-                            <Label htmlFor="edit-product-name">Name</Label>
-                            <Input
-                                id="edit-product-name"
-                                value={data.name}
-                                onChange={(event) =>
-                                    setData('name', event.target.value)
-                                }
-                                required
-                            />
-                        </div>
-                        <div>
-                            <Label htmlFor="edit-product-description">
-                                Description
-                            </Label>
-                            <Textarea
-                                id="edit-product-description"
-                                rows={3}
-                                value={data.description}
-                                onChange={(event) =>
-                                    setData(
-                                        'description',
-                                        event.target.value,
-                                    )
-                                }
-                            />
-                        </div>
-                        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                             <div>
-                                <Label htmlFor="edit-product-price">Price</Label>
+                                <Label htmlFor="edit-product-name">Name</Label>
                                 <Input
-                                    id="edit-product-price"
-                                    type="number"
-                                    min="0"
-                                    step="0.01"
-                                    value={data.price}
+                                    id="edit-product-name"
+                                    value={data.name}
                                     onChange={(event) =>
-                                        setData('price', event.target.value)
+                                        setData('name', event.target.value)
                                     }
+                                    required
                                 />
                             </div>
                             <div>
-                                <Label htmlFor="edit-product-stock">
-                                    Stock Quantity
+                                <Label htmlFor="edit-product-description">
+                                    Description
                                 </Label>
-                                <Input
-                                    id="edit-product-stock"
-                                    type="number"
-                                    min="0"
-                                    value={data.stock_quantity}
+                                <Textarea
+                                    id="edit-product-description"
+                                    rows={3}
+                                    value={data.description}
                                     onChange={(event) =>
                                         setData(
-                                            'stock_quantity',
+                                            'description',
                                             event.target.value,
                                         )
                                     }
                                 />
                             </div>
-                        </div>
-                        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-                            <div>
-                                <Label htmlFor="edit-product-category">
-                                    Category
-                                </Label>
-                                <Input
-                                    id="edit-product-category"
-                                    value={data.category}
-                                    onChange={(event) =>
-                                        setData('category', event.target.value)
-                                    }
-                                />
-                            </div>
-                            <div>
-                                <Label htmlFor="edit-product-status">
-                                    Status
-                                </Label>
-                                <select
-                                    id="edit-product-status"
-                                    className="w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 focus:border-blue-500 focus:ring-2 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100"
-                                    value={data.status}
-                                    onChange={(event) =>
-                                        setData('status', event.target.value)
-                                    }
-                                >
-                                    <option value="draft">Draft</option>
-                                    <option value="published">Published</option>
-                                    <option value="archived">Archived</option>
-                                    <option value="inactive">Inactive</option>
-                                </select>
-                            </div>
-                        </div>
-                        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-                            <div>
-                                <Label htmlFor="edit-product-type">Type</Label>
-                                <select
-                                    id="edit-product-type"
-                                    className="w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 focus:border-blue-500 focus:ring-2 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100"
-                                    value={data.type}
-                                    onChange={(event) =>
-                                        setData('type', event.target.value)
-                                    }
-                                >
-                                    <option value="physical">Physical</option>
-                                    <option value="digital">Digital</option>
-                                    <option value="service">Service</option>
-                                    <option value="subscription">
-                                        Subscription
-                                    </option>
-                                </select>
-                            </div>
-                            <div>
-                                <Label htmlFor="edit-product-sku">SKU</Label>
-                                <Input
-                                    id="edit-product-sku"
-                                    value={data.sku}
-                                    onChange={(event) =>
-                                        setData('sku', event.target.value)
-                                    }
-                                />
-                            </div>
-                        </div>
-                        {existingProductImages.length > 0 && (
-                            <div className="space-y-2">
-                                <Label>Current Images</Label>
-                                <div className="grid grid-cols-2 gap-3 md:grid-cols-3">
-                                    {existingProductImages.map((image) => (
-                                        <div
-                                            key={image.id ?? image.sort_order}
-                                            className="relative overflow-hidden rounded-lg border border-gray-200 dark:border-gray-700"
-                                        >
-                                            <img
-                                                src={image.image_url}
-                                                alt={
-                                                    image.alt_text ||
-                                                    'Existing product image'
-                                                }
-                                                className="h-28 w-full object-cover"
-                                            />
-                                            {image.is_primary && (
-                                                <Badge className="absolute left-2 top-2 bg-yellow-500 text-xs font-semibold text-white hover:bg-yellow-500">
-                                                    Primary
-                                                </Badge>
-                                            )}
-                                        </div>
-                                    ))}
+                            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                                <div>
+                                    <Label htmlFor="edit-product-price">
+                                        Price
+                                    </Label>
+                                    <Input
+                                        id="edit-product-price"
+                                        type="number"
+                                        min="0"
+                                        step="0.01"
+                                        value={data.price}
+                                        onChange={(event) =>
+                                            setData('price', event.target.value)
+                                        }
+                                    />
                                 </div>
-                                <p className="text-xs text-gray-500 dark:text-gray-400">
-                                    Uploading new images will append them to this
-                                    product after saving.
-                                </p>
+                                <div>
+                                    <Label htmlFor="edit-product-stock">
+                                        Stock Quantity
+                                    </Label>
+                                    <Input
+                                        id="edit-product-stock"
+                                        type="number"
+                                        min="0"
+                                        value={data.stock_quantity}
+                                        onChange={(event) =>
+                                            setData(
+                                                'stock_quantity',
+                                                event.target.value,
+                                            )
+                                        }
+                                    />
+                                </div>
                             </div>
-                        )}
-                        <ImageUploader
-                            images={editProductImages}
-                            onImagesChange={setEditProductImages}
-                            maxImages={8}
-                        />
+                            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                                <div>
+                                    <Label htmlFor="edit-product-category">
+                                        Category
+                                    </Label>
+                                    <Input
+                                        id="edit-product-category"
+                                        value={data.category}
+                                        onChange={(event) =>
+                                            setData(
+                                                'category',
+                                                event.target.value,
+                                            )
+                                        }
+                                    />
+                                </div>
+                                <div>
+                                    <Label htmlFor="edit-product-status">
+                                        Status
+                                    </Label>
+                                    <select
+                                        id="edit-product-status"
+                                        className="w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 focus:border-blue-500 focus:ring-2 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100"
+                                        value={data.status}
+                                        onChange={(event) =>
+                                            setData(
+                                                'status',
+                                                event.target.value,
+                                            )
+                                        }
+                                    >
+                                        <option value="draft">Draft</option>
+                                        <option value="published">
+                                            Published
+                                        </option>
+                                        <option value="archived">
+                                            Archived
+                                        </option>
+                                        <option value="inactive">
+                                            Inactive
+                                        </option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                                <div>
+                                    <Label htmlFor="edit-product-type">
+                                        Type
+                                    </Label>
+                                    <select
+                                        id="edit-product-type"
+                                        className="w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 focus:border-blue-500 focus:ring-2 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100"
+                                        value={data.type}
+                                        onChange={(event) =>
+                                            setData('type', event.target.value)
+                                        }
+                                    >
+                                        <option value="physical">
+                                            Physical
+                                        </option>
+                                        <option value="digital">Digital</option>
+                                        <option value="service">Service</option>
+                                        <option value="subscription">
+                                            Subscription
+                                        </option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <Label htmlFor="edit-product-sku">
+                                        SKU
+                                    </Label>
+                                    <Input
+                                        id="edit-product-sku"
+                                        value={data.sku}
+                                        onChange={(event) =>
+                                            setData('sku', event.target.value)
+                                        }
+                                    />
+                                </div>
+                            </div>
+                            {existingProductImages.length > 0 && (
+                                <div className="space-y-2">
+                                    <Label>Current Images</Label>
+                                    <div className="grid grid-cols-2 gap-3 md:grid-cols-3">
+                                        {existingProductImages.map((image) => (
+                                            <div
+                                                key={
+                                                    image.id ?? image.sort_order
+                                                }
+                                                className="relative overflow-hidden rounded-lg border border-gray-200 dark:border-gray-700"
+                                            >
+                                                <img
+                                                    src={image.image_url}
+                                                    alt={
+                                                        image.alt_text ||
+                                                        'Existing product image'
+                                                    }
+                                                    className="h-28 w-full object-cover"
+                                                />
+                                                {image.is_primary && (
+                                                    <Badge className="absolute left-2 top-2 bg-yellow-500 text-xs font-semibold text-white hover:bg-yellow-500">
+                                                        Primary
+                                                    </Badge>
+                                                )}
+                                            </div>
+                                        ))}
+                                    </div>
+                                    <p className="text-xs text-gray-500 dark:text-gray-400">
+                                        Uploading new images will append them to
+                                        this product after saving.
+                                    </p>
+                                </div>
+                            )}
+                            <ImageUploader
+                                images={editProductImages}
+                                onImagesChange={setEditProductImages}
+                                maxImages={8}
+                            />
                         </div>
                         <DialogFooter>
                             <Button

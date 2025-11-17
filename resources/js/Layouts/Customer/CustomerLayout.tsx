@@ -400,7 +400,9 @@ export default function CustomerLayout({
                                                         onClick={handleClose}
                                                     >
                                                         <span className="mr-3 h-2 w-2 rounded-full bg-white/60" />
-                                                        <span>{section.label}</span>
+                                                        <span>
+                                                            {section.label}
+                                                        </span>
                                                     </Link>
                                                 );
                                             }

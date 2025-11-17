@@ -64,6 +64,9 @@ interface BillPayment {
     payment_method?: string;
     reference_number?: string;
     notes?: string;
+    email?: string;
+    contact_number?: string;
+    customer_name?: string;
     category?: string;
     priority: 'low' | 'medium' | 'high' | 'urgent';
     is_recurring: boolean;
@@ -146,7 +149,7 @@ export default function BillPayment({ auth }: { auth: any }) {
     const [formData, setFormData] = useState({
         bill_title: '',
         bill_description: '',
-        biller_id: 'none',
+        biller_id: '',
         amount: '',
         due_date: new Date().toISOString().split('T')[0], // Default to today
         payment_date: '',
@@ -154,6 +157,9 @@ export default function BillPayment({ auth }: { auth: any }) {
         payment_method: '',
         reference_number: '',
         notes: '',
+        email: '',
+        contact_number: '',
+        customer_name: '',
         category: '',
         priority: 'medium',
         is_recurring: false,
@@ -252,12 +258,19 @@ export default function BillPayment({ auth }: { auth: any }) {
     ]);
 
     const handleCreateBill = async () => {
+        if (!formData.email || !formData.contact_number) {
+            toast.error('Email and Contact Number are required');
+            return;
+        }
+        if (!formData.biller_id || formData.biller_id === 'none') {
+            toast.error('Biller is required');
+            return;
+        }
         try {
             const submitData = {
                 ...formData,
                 amount: parseFloat(formData.amount),
-                biller_id:
-                    formData.biller_id === 'none' ? null : formData.biller_id,
+                biller_id: parseInt(formData.biller_id),
             };
             await axios.post('/bill-payments', submitData);
             toast.success('Bill payment created successfully');
@@ -265,7 +278,7 @@ export default function BillPayment({ auth }: { auth: any }) {
             setFormData({
                 bill_title: '',
                 bill_description: '',
-                biller_id: 'none',
+                biller_id: billers.length > 0 ? billers[0].id.toString() : '',
                 amount: '',
                 due_date: new Date().toISOString().split('T')[0], // Default to today
                 payment_date: '',
@@ -273,6 +286,9 @@ export default function BillPayment({ auth }: { auth: any }) {
                 payment_method: '',
                 reference_number: '',
                 notes: '',
+                email: '',
+                contact_number: '',
+                customer_name: '',
                 category: '',
                 priority: 'medium',
                 is_recurring: false,
@@ -290,12 +306,19 @@ export default function BillPayment({ auth }: { auth: any }) {
 
     const handleUpdateBill = async () => {
         if (!editingBill) return;
+        if (!formData.email || !formData.contact_number) {
+            toast.error('Email and Contact Number are required');
+            return;
+        }
+        if (!formData.biller_id || formData.biller_id === 'none') {
+            toast.error('Biller is required');
+            return;
+        }
         try {
             const submitData = {
                 ...formData,
                 amount: parseFloat(formData.amount),
-                biller_id:
-                    formData.biller_id === 'none' ? null : formData.biller_id,
+                biller_id: parseInt(formData.biller_id),
             };
             await axios.put(`/bill-payments/${editingBill.id}`, submitData);
             toast.success('Bill payment updated successfully');
@@ -407,8 +430,8 @@ export default function BillPayment({ auth }: { auth: any }) {
         >
             <Head title="Bill Payments" />
 
-            <div className="py-12">
-                <div className="mx-auto max-w-7xl sm:px-6 lg:px-8">
+            <div className="w-full px-6 py-6">
+                <div className="w-full">
                     {/* Statistics Cards */}
                     {statistics && (
                         <div className="mb-8 grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-4">
@@ -566,7 +589,7 @@ export default function BillPayment({ auth }: { auth: any }) {
                                                     </div>
                                                     <div className="space-y-2">
                                                         <Label htmlFor="biller_id">
-                                                            Biller
+                                                            Biller *
                                                         </Label>
                                                         <Select
                                                             value={
@@ -581,14 +604,12 @@ export default function BillPayment({ auth }: { auth: any }) {
                                                                         value,
                                                                 })
                                                             }
+                                                            required
                                                         >
                                                             <SelectTrigger>
                                                                 <SelectValue placeholder="Select a biller" />
                                                             </SelectTrigger>
                                                             <SelectContent>
-                                                                <SelectItem value="none">
-                                                                    No Biller
-                                                                </SelectItem>
                                                                 {billers.map(
                                                                     (
                                                                         biller,
@@ -608,8 +629,7 @@ export default function BillPayment({ auth }: { auth: any }) {
                                                             </SelectContent>
                                                         </Select>
                                                         <div className="h-5">
-                                                            {formData.biller_id !==
-                                                                'none' &&
+                                                            {formData.biller_id &&
                                                                 (() => {
                                                                     const selectedBiller =
                                                                         billers.find(
@@ -807,6 +827,66 @@ export default function BillPayment({ auth }: { auth: any }) {
                                                             })
                                                         }
                                                         placeholder="Enter reference number"
+                                                    />
+                                                </div>
+                                                <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                                                    <div className="space-y-2">
+                                                        <Label htmlFor="email">
+                                                            Email *
+                                                        </Label>
+                                                        <Input
+                                                            id="email"
+                                                            type="email"
+                                                            required
+                                                            value={formData.email}
+                                                            onChange={(e) =>
+                                                                setFormData({
+                                                                    ...formData,
+                                                                    email: e.target.value,
+                                                                })
+                                                            }
+                                                            placeholder="customer@example.com"
+                                                        />
+                                                    </div>
+                                                    <div className="space-y-2">
+                                                        <Label htmlFor="contact_number">
+                                                            Contact Number *
+                                                        </Label>
+                                                        <Input
+                                                            id="contact_number"
+                                                            required
+                                                            value={
+                                                                formData.contact_number
+                                                            }
+                                                            onChange={(e) =>
+                                                                setFormData({
+                                                                    ...formData,
+                                                                    contact_number:
+                                                                        e.target.value,
+                                                                })
+                                                            }
+                                                            placeholder="+1 (555) 123-4567"
+                                                        />
+                                                    </div>
+                                                </div>
+                                                <div className="space-y-2">
+                                                    <Label htmlFor="customer_name">
+                                                        Customer Name
+                                                    </Label>
+                                                    <Input
+                                                        id="customer_name"
+                                                        value={
+                                                            formData.customer_name
+                                                        }
+                                                        onChange={(e) =>
+                                                            setFormData({
+                                                                ...formData,
+                                                                customer_name:
+                                                                    e.target
+                                                                        .value,
+                                                            })
+                                                        }
+                                                        placeholder="John Doe"
                                                     />
                                                 </div>
                                                 <div className="flex items-center space-x-2">
@@ -1087,6 +1167,18 @@ export default function BillPayment({ auth }: { auth: any }) {
                                                                         </span>
                                                                     )}
                                                                 </div>
+                                                                {bill.customer_name && (
+                                                                    <div className="text-xs">
+                                                                        <span className="text-muted-foreground">
+                                                                            Customer:{' '}
+                                                                        </span>
+                                                                        <span className="font-medium">
+                                                                            {
+                                                                                bill.customer_name
+                                                                            }
+                                                                        </span>
+                                                                    </div>
+                                                                )}
                                                                 {(bill.biller ||
                                                                     bill.reference_number) && (
                                                                     <div className="flex items-center space-x-4 text-xs">
@@ -1177,7 +1269,7 @@ export default function BillPayment({ auth }: { auth: any }) {
                                                                         '',
                                                                     biller_id:
                                                                         bill.biller_id?.toString() ||
-                                                                        'none',
+                                                                        '',
                                                                     amount: bill.amount.toString(),
                                                                     due_date:
                                                                         bill.due_date,
@@ -1193,6 +1285,15 @@ export default function BillPayment({ auth }: { auth: any }) {
                                                                         '',
                                                                     notes:
                                                                         bill.notes ||
+                                                                        '',
+                                                                    email:
+                                                                        bill.email ||
+                                                                        '',
+                                                                    contact_number:
+                                                                        bill.contact_number ||
+                                                                        '',
+                                                                    customer_name:
+                                                                        bill.customer_name ||
                                                                         '',
                                                                     category:
                                                                         bill.category ||
@@ -1419,7 +1520,7 @@ export default function BillPayment({ auth }: { auth: any }) {
                                 />
                             </div>
                             <div className="space-y-2">
-                                <Label htmlFor="edit_biller_id">Biller</Label>
+                                <Label htmlFor="edit_biller_id">Biller *</Label>
                                 <Select
                                     value={formData.biller_id}
                                     onValueChange={(value) =>
@@ -1428,14 +1529,12 @@ export default function BillPayment({ auth }: { auth: any }) {
                                             biller_id: value,
                                         })
                                     }
+                                    required
                                 >
                                     <SelectTrigger>
                                         <SelectValue placeholder="Select a biller" />
                                     </SelectTrigger>
                                     <SelectContent>
-                                        <SelectItem value="none">
-                                            No Biller
-                                        </SelectItem>
                                         {billers.map((biller) => (
                                             <SelectItem
                                                 key={biller.id}
@@ -1447,7 +1546,7 @@ export default function BillPayment({ auth }: { auth: any }) {
                                     </SelectContent>
                                 </Select>
                                 <div className="h-5">
-                                    {formData.biller_id !== 'none' &&
+                                    {formData.biller_id &&
                                         (() => {
                                             const selectedBiller = billers.find(
                                                 (b) =>
@@ -1647,6 +1746,57 @@ export default function BillPayment({ auth }: { auth: any }) {
                                 }
                                 placeholder="Enter reference number"
                             />
+                        </div>
+                        <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                            <div className="space-y-2">
+                                <Label htmlFor="edit_email">Email *</Label>
+                                <Input
+                                    id="edit_email"
+                                    type="email"
+                                    required
+                                    value={formData.email}
+                                    onChange={(e) =>
+                                        setFormData({
+                                            ...formData,
+                                            email: e.target.value,
+                                        })
+                                    }
+                                    placeholder="customer@example.com"
+                                />
+                            </div>
+                            <div className="space-y-2">
+                                <Label htmlFor="edit_contact_number">
+                                    Contact Number *
+                                </Label>
+                                <Input
+                                    id="edit_contact_number"
+                                    required
+                                    value={formData.contact_number}
+                                    onChange={(e) =>
+                                        setFormData({
+                                            ...formData,
+                                            contact_number: e.target.value,
+                                        })
+                                    }
+                                    placeholder="+1 (555) 123-4567"
+                                />
+                            </div>
+                            <div className="space-y-2">
+                                <Label htmlFor="edit_customer_name">
+                                    Customer Name
+                                </Label>
+                                <Input
+                                    id="edit_customer_name"
+                                    value={formData.customer_name}
+                                    onChange={(e) =>
+                                        setFormData({
+                                            ...formData,
+                                            customer_name: e.target.value,
+                                        })
+                                    }
+                                    placeholder="John Doe"
+                                />
+                            </div>
                         </div>
                     </div>
                     <DialogFooter>

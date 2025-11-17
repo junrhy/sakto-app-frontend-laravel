@@ -6,7 +6,7 @@ import { useCallback, useMemo, useState } from 'react';
 import { toast } from 'sonner';
 import { CommunityOverviewCard } from './components/CommunityOverviewCard';
 import { LeaveCommunityDialog } from './components/LeaveCommunityDialog';
-import { CommunityCollectionItem, CommunityDetailProps } from './types';
+import { CommunityDetailProps } from './types';
 import { normalizeCollection } from './utils/communityCollections';
 
 export default function Show({
@@ -74,13 +74,16 @@ export default function Show({
                 return;
             }
 
-        setActiveSection(id);
-        if (typeof window !== 'undefined') {
-            const target = document.getElementById(id);
-            if (target) {
-                target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            setActiveSection(id);
+            if (typeof window !== 'undefined') {
+                const target = document.getElementById(id);
+                if (target) {
+                    target.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'start',
+                    });
+                }
             }
-        }
         },
         [router, projectIdentifier, ownerIdentifier],
     );
@@ -119,12 +122,7 @@ export default function Show({
             if (data.status === 'success') {
                 toast.success(data.message);
                 router.reload({
-                    only: [
-                        'community',
-                        'isJoined',
-                        'isPending',
-                        'joinedAt',
-                    ],
+                    only: ['community', 'isJoined', 'isPending', 'joinedAt'],
                 });
             } else {
                 toast.error(data.message || 'Failed to join community');
@@ -159,12 +157,7 @@ export default function Show({
             if (data.status === 'success') {
                 toast.success(data.message);
                 router.reload({
-                    only: [
-                        'community',
-                        'isJoined',
-                        'isPending',
-                        'joinedAt',
-                    ],
+                    only: ['community', 'isJoined', 'isPending', 'joinedAt'],
                 });
             } else {
                 toast.error(data.message || 'Failed to leave community');

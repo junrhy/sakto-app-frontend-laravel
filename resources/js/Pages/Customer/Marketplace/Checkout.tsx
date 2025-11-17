@@ -161,26 +161,24 @@ export default function MarketplaceCheckout({
 
     const cartKeyCandidates = useMemo(() => {
         const ownerKeys = new Set<string>();
-        
+
         // Add owner identifier variations (same as ProductsSection)
         if (ownerIdentifier !== null && ownerIdentifier !== undefined) {
             ownerKeys.add(String(ownerIdentifier));
         }
-        
+
         // Add community identifier variations
-        [
-            community.identifier,
-            community.slug,
-            community.id,
-        ].forEach((value) => {
-            if (value !== null && value !== undefined) {
-                const asString = String(value).trim();
-                if (asString.length > 0) {
-                    ownerKeys.add(asString);
+        [community.identifier, community.slug, community.id].forEach(
+            (value) => {
+                if (value !== null && value !== undefined) {
+                    const asString = String(value).trim();
+                    if (asString.length > 0) {
+                        ownerKeys.add(asString);
+                    }
                 }
-            }
-        });
-        
+            },
+        );
+
         // Add normalized lowercase version (same as ProductsSection)
         const normalizedOwner = String(ownerIdentifier ?? '')
             .trim()
@@ -188,7 +186,7 @@ export default function MarketplaceCheckout({
         if (normalizedOwner.length > 0) {
             ownerKeys.add(normalizedOwner);
         }
-        
+
         // Add default fallback (same as ProductsSection)
         ownerKeys.add('default');
 
@@ -316,7 +314,7 @@ export default function MarketplaceCheckout({
             // No cart found, use the preferred key
             const preferredKey = cartKeyCandidates[0];
             if (preferredKey && storageKey !== preferredKey) {
-        setStorageKey(preferredKey);
+                setStorageKey(preferredKey);
             }
         }
     }, [cartKeyCandidates, isBrowser]); // Removed cartItems and storageKey from dependencies to avoid loops
@@ -386,8 +384,11 @@ export default function MarketplaceCheckout({
         }
 
         // Create a signature of current products to detect when they change
-        const productsSignature = products.map(p => p.id).sort().join(',');
-        
+        const productsSignature = products
+            .map((p) => p.id)
+            .sort()
+            .join(',');
+
         // Only clean up when products actually change, not on every render
         if (productsLoadedRef.current === productsSignature) {
             return;
@@ -406,7 +407,8 @@ export default function MarketplaceCheckout({
             });
 
             if (availableItems.length !== currentCartItems.length) {
-                const removedCount = currentCartItems.length - availableItems.length;
+                const removedCount =
+                    currentCartItems.length - availableItems.length;
                 if (removedCount > 0) {
                     toast.warning(
                         `${removedCount} item(s) removed from cart - no longer available.`,
@@ -504,9 +506,7 @@ export default function MarketplaceCheckout({
         }
 
         const weightForCalculation =
-            effectiveCartWeight > 0
-                ? effectiveCartWeight
-                : DEFAULT_ITEM_WEIGHT;
+            effectiveCartWeight > 0 ? effectiveCartWeight : DEFAULT_ITEM_WEIGHT;
 
         return calculateShippingFee(
             formData.country,
@@ -551,12 +551,7 @@ export default function MarketplaceCheckout({
                 weightForQuotes,
             ),
         }));
-    }, [
-        effectiveCartWeight,
-        formData.country,
-        formData.state,
-        formData.city,
-    ]);
+    }, [effectiveCartWeight, formData.country, formData.state, formData.city]);
 
     useEffect(() => {
         if (
@@ -1067,7 +1062,9 @@ export default function MarketplaceCheckout({
                                                                     variant="outline"
                                                                 >
                                                                     {key}:{' '}
-                                                                    {String(value)}
+                                                                    {String(
+                                                                        value,
+                                                                    )}
                                                                 </Badge>
                                                             ),
                                                         )}
@@ -1663,8 +1660,8 @@ export default function MarketplaceCheckout({
                                 <p className="text-xs text-gray-500 dark:text-gray-400">
                                     By placing your order, you agree to the
                                     marketplace terms and understand that
-                                    {'' + communityName} will fulfill and
-                                    manage the order.
+                                    {'' + communityName} will fulfill and manage
+                                    the order.
                                 </p>
                             </CardContent>
                         </Card>
